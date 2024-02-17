@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export const userLoginValid = {
   minLength: 3,
@@ -6,9 +6,9 @@ export const userLoginValid = {
 };
 
 export enum ReactionStatusEnum {
-  None = "None",
-  Like = "Like",
-  Dislike = "Dislike",
+  None = 'None',
+  Like = 'Like',
+  Dislike = 'Dislike',
 }
 
 export const ReactionSchema = new mongoose.Schema(
@@ -31,7 +31,7 @@ export const ReactionSchema = new mongoose.Schema(
   },
   { _id: true, versionKey: false },
 );
-export const ReactionModel = mongoose.model("reaction", ReactionSchema);
+export const ReactionModel = mongoose.model('reaction', ReactionSchema);
 
 export const LikesInfoSchema = new mongoose.Schema(
   {
@@ -40,4 +40,4 @@ export const LikesInfoSchema = new mongoose.Schema(
   },
   { _id: false },
 );
-export const LikesInfoModel = mongoose.model("LikesInfo", LikesInfoSchema);
+export const LikesInfoModel = mongoose.model('LikesInfo', LikesInfoSchema);

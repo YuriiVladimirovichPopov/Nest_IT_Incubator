@@ -1,18 +1,17 @@
-import "reflect-metadata";
-import { ObjectId } from "mongodb";
-import { CommentModel } from "../domain/schemas/comments.schema";
+import { ObjectId } from 'mongodb';
+import { CommentModel } from '../domain/schemas/comments.schema';
 import {
   ReactionModel,
   ReactionStatusEnum,
-} from "../domain/schemas/reactionInfo.schema";
-import { CommentsQueryRepository } from "../query repozitory/queryCommentsRepository";
-import { ReactionsService } from "./reaction-service";
-import { CommentViewModel } from "../models/comments/commentViewModel";
-import { injectable } from "inversify";
-import { UserModel } from "../domain/schemas/users.schema";
-import { ReactionsRepository } from "../repositories/reaction-repository";
+} from '../domain/schemas/reactionInfo.schema';
+import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
+import { ReactionsService } from './reaction-service';
+import { CommentViewModel } from '../models/comments/commentViewModel';
+import { UserModel } from '../domain/schemas/users.schema';
+import { ReactionsRepository } from '../repositories/reaction-repository';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class CommentsService {
   constructor(
     private commentsQueryRepository: CommentsQueryRepository,
@@ -23,7 +22,7 @@ export class CommentsService {
   async updateLikesDislikes(
     commentId: string,
     userId: string,
-    action: "None" | "Like" | "Dislike",
+    action: 'None' | 'Like' | 'Dislike',
   ) {
     const comment = await this.commentsQueryRepository.findCommentById(
       commentId,
@@ -51,17 +50,17 @@ export class CommentsService {
     }
 
     switch (action) {
-      case "Like":
+      case 'Like':
         reaction.myStatus = ReactionStatusEnum.Like;
         break;
-      case "Dislike":
+      case 'Dislike':
         reaction.myStatus = ReactionStatusEnum.Dislike;
         break;
-      case "None":
+      case 'None':
         reaction.myStatus = ReactionStatusEnum.None;
         break;
       default:
-        console.error("Invalid action:", action);
+        console.error('Invalid action:', action);
         return null;
     }
 
@@ -95,14 +94,14 @@ export class CommentsService {
     userId: string,
   ): Promise<{ likes: number; dislikes: number }> {
     const reactions = await CommentModel.aggregate([
-      { $unwind: "$likesInfo" },
+      { $unwind: '$likesInfo' },
       {
         $group: {
-          _id: "$likesInfo.userId",
+          _id: '$likesInfo.userId',
           likes: {
             $sum: {
               $cond: [
-                { $eq: ["$likesInfo.myStatus", ReactionStatusEnum.Like] },
+                { $eq: ['$likesInfo.myStatus', ReactionStatusEnum.Like] },
                 1,
                 0,
               ],
@@ -111,7 +110,7 @@ export class CommentsService {
           dislikes: {
             $sum: {
               $cond: [
-                { $eq: ["$likesInfo.myStatus", ReactionStatusEnum.Dislike] },
+                { $eq: ['$likesInfo.myStatus', ReactionStatusEnum.Dislike] },
                 1,
                 0,
               ],
@@ -132,7 +131,7 @@ export class CommentsService {
   ) {
     const comment =
       await this.commentsQueryRepository.findCommentById(commentId);
-    if (!comment) throw new Error("Comment not found");
+    if (!comment) throw new Error('Comment not found');
     return this.reactionsService.updateReactionByParentId(
       commentId,
       userId,

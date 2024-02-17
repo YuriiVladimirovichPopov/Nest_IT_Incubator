@@ -1,11 +1,10 @@
-import "reflect-metadata";
-import { injectable } from "inversify";
-import { ReactionStatusEnum } from "../domain/schemas/reactionInfo.schema";
-import { ReactionModel } from "../domain/schemas/reactionInfo.schema";
-import { ReactionsRepository } from "../repositories/reaction-repository";
-import { ReactionMongoDb } from "../types";
+import { Injectable } from '@nestjs/common';
+import { ReactionStatusEnum } from '../domain/schemas/reactionInfo.schema';
+import { ReactionModel } from '../domain/schemas/reactionInfo.schema';
+import { ReactionsRepository } from '../repositories/reaction-repository';
+import { ReactionMongoDb } from '../types';
 
-@injectable()
+@Injectable()
 export class ReactionsService {
   constructor(private reactionRepository: ReactionsRepository) {}
 
@@ -19,7 +18,7 @@ export class ReactionsService {
       await this.reactionRepository.findByParentAndUserIds(parentId, userId);
     if (existingReaction) {
       throw new Error(
-        "Reaction already exists. Use update method to change the reaction.",
+        'Reaction already exists. Use update method to change the reaction.',
       );
     }
 
@@ -47,7 +46,7 @@ export class ReactionsService {
 
     if (!reaction) {
       throw new Error(
-        "Reaction not found. Use add method to create a new reaction.",
+        'Reaction not found. Use add method to create a new reaction.',
       );
     }
 

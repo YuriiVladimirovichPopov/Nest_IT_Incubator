@@ -1,7 +1,7 @@
-import mongoose, { HydratedDocument } from "mongoose";
-import { CommentsMongoDbType } from "../../types";
-import { commentatorInfoSchema } from "./commentatorInfo.schema";
-import { LikesInfoSchema } from "./reactionInfo.schema";
+import mongoose, { HydratedDocument } from 'mongoose';
+import { CommentsMongoDbType } from '../../types';
+import { commentatorInfoSchema } from './commentatorInfo.schema';
+import { LikesInfoSchema } from './reactionInfo.schema';
 
 export const contentValid = {
   minLength: 20,
@@ -22,4 +22,4 @@ export const CommentSchema = new mongoose.Schema<CommentsMongoDbType>({
   likesInfo: { type: LikesInfoSchema, required: true },
 });
 
-export const CommentModel = mongoose.model("comments", CommentSchema);
+export const CommentModel = mongoose.model('comments', CommentSchema);

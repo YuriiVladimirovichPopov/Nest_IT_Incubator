@@ -1,7 +1,7 @@
-import { NextFunction, Request, Response } from "express";
-import { jwtService } from "../../application/jwt-service";
-import { httpStatuses } from "../../routers/helpers/send-status";
-import { ObjectId } from "mongodb";
+/* import { NextFunction, Request, Response } from 'express';
+import { jwtService } from '../../application/jwt-service';
+import { httpStatuses } from 'src/send-status';
+import { ObjectId } from 'mongodb';
 
 export const authMiddleware = async (
   req: Request,
@@ -11,11 +11,11 @@ export const authMiddleware = async (
   if (!req.headers.authorization) {
     return res.sendStatus(httpStatuses.UNAUTHORIZED_401);
   }
-  const typeAuth = req.headers.authorization.split(" ")[0];
-  if (typeAuth !== "Bearer")
+  const typeAuth = req.headers.authorization.split(' ')[0];
+  if (typeAuth !== 'Bearer')
     return res.sendStatus(httpStatuses.UNAUTHORIZED_401);
 
-  const token = req.headers.authorization.split(" ")[1];
+  const token = req.headers.authorization.split(' ')[1];
 
   const userId = await jwtService.getUserIdByToken(token);
 
@@ -26,7 +26,8 @@ export const authMiddleware = async (
     return res.sendStatus(httpStatuses.UNAUTHORIZED_401);
   }
 
-  req.body.userId = userId; 
+  req.body.userId = userId;
 
   next();
 };
+ */

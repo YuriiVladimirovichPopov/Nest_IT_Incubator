@@ -1,14 +1,13 @@
-import "reflect-metadata";
-import { ObjectId, WithId } from "mongodb";
-import { BlogsMongoDbType } from "../types";
-import { BlogViewModel } from "../models/blogs/blogsViewModel";
-import { PaginatedType } from "../routers/helpers/pagination";
-import { Paginated } from "../routers/helpers/pagination";
-import { BlogModel } from "../domain/schemas/blogs.schema";
-import { isValidObjectId } from "mongoose";
-import { injectable } from "inversify";
+import { ObjectId, WithId } from 'mongodb';
+import { BlogsMongoDbType } from '../types';
+import { BlogViewModel } from '../models/blogs/blogsViewModel';
+import { PaginatedType } from 'src/pagination';
+import { Paginated } from 'src/pagination';
+import { BlogModel } from '../domain/schemas/blogs.schema';
+import { isValidObjectId } from 'mongoose';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class QueryBlogsRepository {
   _blogMapper(blog: BlogsMongoDbType): BlogViewModel {
     return {
@@ -27,7 +26,7 @@ export class QueryBlogsRepository {
     let filter = {};
     if (pagination.searchNameTerm) {
       filter = {
-        name: { $regex: pagination.searchNameTerm || "", $options: "i" },
+        name: { $regex: pagination.searchNameTerm || '', $options: 'i' },
       };
     }
     const result: WithId<BlogsMongoDbType>[] = await BlogModel.find(filter)

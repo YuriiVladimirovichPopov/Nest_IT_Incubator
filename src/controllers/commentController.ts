@@ -1,15 +1,14 @@
-import "reflect-metadata";
-import { Response, Request } from "express";
-import { CommentsQueryRepository } from "../query repozitory/queryCommentsRepository";
-import { CommentsRepository } from "../repositories/comments-repository";
-import { httpStatuses } from "../routers/helpers/send-status";
-import { parsePaginatedType } from "../routers/helpers/pagination";
-import { CommentsService } from "../application/comment-service";
-import { ReactionStatusEnum } from "../domain/schemas/reactionInfo.schema";
-import { injectable } from "inversify";
-import { UsersMongoDbType } from "../types";
+import { Response, Request } from 'express';
+import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
+import { CommentsRepository } from '../repositories/comments-repository';
+import { httpStatuses } from 'src/send-status';
+//import { parsePaginatedType } from 'src/pagination';
+import { CommentsService } from '../application/comment-service';
+//import { ReactionStatusEnum } from '../domain/schemas/reactionInfo.schema';
+import { UsersMongoDbType } from '../types';
+import { Controller, Get } from '@nestjs/common';
 
-@injectable()
+@Controller('comments')
 export class CommentController {
   constructor(
     private commentsRepository: CommentsRepository,
@@ -17,6 +16,7 @@ export class CommentController {
     private commentsService: CommentsService,
   ) {}
 
+  @Get('comment/:id')
   async getCommentById(req: Request, res: Response) {
     const user = req.body.user as UsersMongoDbType | null;
 
@@ -31,6 +31,7 @@ export class CommentController {
     }
   }
 
+  /* @Put()
   async updateCommentById(req: Request, res: Response) {
     const user = req.user!;
     const commentId = req.params.commentId;
@@ -52,8 +53,9 @@ export class CommentController {
     if (updateComment) {
       return res.sendStatus(httpStatuses.NO_CONTENT_204);
     }
-  }
+  } */
 
+  /* @Get()
   async getCommentsByParentId(req: Request, res: Response) {
     try {
       const parentId = req.params.parentId;
@@ -70,10 +72,11 @@ export class CommentController {
     } catch (error) {
       return res
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: "Сервер на кофе-брейке!" });
+        .send({ message: 'Сервер на кофе-брейке!' });
     }
-  }
+  } */
 
+  /* @Put()
   async updateLikesDislikes(req: Request, res: Response) {
     try {
       const commentId = req.params.commentId;
@@ -89,19 +92,19 @@ export class CommentController {
       if (!updatedComment) {
         return res
           .status(httpStatuses.NOT_FOUND_404)
-          .send({ message: "Comment not found" });
+          .send({ message: 'Comment not found' });
       } else {
         return res.sendStatus(httpStatuses.NO_CONTENT_204);
       }
     } catch (error) {
-      console.error("Ошибка при обновлении реакций:", error);
+      console.error('Ошибка при обновлении реакций:', error);
       return res
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: "Сервер на кофе-брейке!" });
+        .send({ message: 'Сервер на кофе-брейке!' });
     }
-  }
-
-  async changeCommentReaction(req: Request, res: Response) {
+  } */
+  //TODO: тут пока не понятно что именно!!!
+  /* async changeCommentReaction(req: Request, res: Response) {
     try {
       const commentId = req.params.commentId;
       const userId = req.user!.id;
@@ -121,12 +124,13 @@ export class CommentController {
       console.error(error);
       return res
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: "Сервер на кофе-брейке!" });
+        .send({ message: 'Сервер на кофе-брейке!' });
     }
-  }
+  } */
 
+  /* @Delete()
   async deleteCommentById(
-    req: Request<{ commentId: string }, {}, {}, {}, { user: string }>,
+    req: Request<{ commentId: string }, { user: string }>,
     res: Response,
   ) {
     const user = req.user!;
@@ -147,5 +151,5 @@ export class CommentController {
     if (commentDelete) {
       return res.sendStatus(httpStatuses.NO_CONTENT_204);
     }
-  }
+  } */
 }

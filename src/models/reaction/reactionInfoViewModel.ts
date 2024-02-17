@@ -1,4 +1,4 @@
-import { ReactionStatusEnum } from "../../domain/schemas/reactionInfo.schema";
+import { ReactionStatusEnum } from '../../domain/schemas/reactionInfo.schema';
 
 export type ReactionInfoViewModel = {
   likesCount: number;

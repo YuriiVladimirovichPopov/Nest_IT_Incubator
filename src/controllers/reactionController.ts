@@ -1,11 +1,10 @@
-import "reflect-metadata";
-import { Response, Request } from "express";
-import { ReactionsService } from "../application/reaction-service";
-import { httpStatuses } from "../routers/helpers/send-status";
-import { ReactionsRepository } from "../repositories/reaction-repository";
-import { injectable } from "inversify";
+import { Response, Request } from 'express';
+import { ReactionsService } from '../application/reaction-service';
+import { httpStatuses } from 'src/send-status';
+import { ReactionsRepository } from '../repositories/reaction-repository';
+import { Controller } from '@nestjs/common';
 
-@injectable()
+@Controller('reactions')
 export class ReactionController {
   constructor(
     private readonly reactionsService: ReactionsService,
@@ -25,7 +24,7 @@ export class ReactionController {
         // Если реакция уже существует, возвращаем ошибку
         return res
           .status(httpStatuses.BAD_REQUEST_400)
-          .send({ message: "Reaction already exists" });
+          .send({ message: 'Reaction already exists' });
       }
 
       // Если реакции нет, создаем новую
@@ -39,7 +38,7 @@ export class ReactionController {
     } catch (error) {
       return res
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: "Сервер на кофе-брейке! " });
+        .send({ message: 'Сервер на кофе-брейке! ' });
     }
   }
 
@@ -57,7 +56,7 @@ export class ReactionController {
     } catch (error) {
       return res
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: "Сервер на кофе-брейке!" });
+        .send({ message: 'Сервер на кофе-брейке!' });
     }
   }
 }

@@ -1,17 +1,18 @@
-import "reflect-metadata";
-import { Request } from "express";
-import { ObjectId } from "mongodb";
-import { UserViewModel } from "./models/users/userViewModel";
+import 'reflect-metadata';
+import { Request } from 'express';
+import { ObjectId } from 'mongodb';
+import { UserViewModel } from './models/users/userViewModel';
 import {
   ExtendedReactionInfoViewModelForPost,
   ReactionInfoDBModel,
   ReactionInfoDBModelForPost,
-} from "./models/reaction/reactionInfoViewModel";
-import { ReactionStatusEnum } from "./domain/schemas/reactionInfo.schema";
-import { injectable } from "inversify";
-import { PostsViewModel } from "./models/posts/postsViewModel";
+} from './models/reaction/reactionInfoViewModel';
+import { ReactionStatusEnum } from './domain/schemas/reactionInfo.schema';
 
-@injectable()
+import { PostsViewModel } from './models/posts/postsViewModel';
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
 export class BlogsMongoDbType {
   constructor(
     public _id: ObjectId,
@@ -23,7 +24,7 @@ export class BlogsMongoDbType {
   ) {}
 }
 
-@injectable()
+@Injectable()
 export class PostsMongoDb {
   public _id: ObjectId;
   public title: string;
@@ -76,7 +77,7 @@ export class PostsMongoDb {
   }
 }
 
-@injectable()
+@Injectable()
 export class UsersMongoDbType {
   constructor(
     public _id: ObjectId,
@@ -84,7 +85,6 @@ export class UsersMongoDbType {
     public email: string,
     public createdAt: string,
     public passwordHash: string,
-    public passwordSalt: string,
     public emailConfirmation: EmailConfirmationType,
     public recoveryCode?: string,
   ) {}
@@ -96,7 +96,7 @@ export type EmailConfirmationType = {
   expirationDate: Date;
 };
 
-@injectable()
+@Injectable()
 export class createPostDTOType {
   constructor(
     public title: string,
@@ -108,7 +108,7 @@ export class createPostDTOType {
   ) {}
 }
 
-@injectable()
+@Injectable()
 export class CommentsMongoDbType {
   public _id: ObjectId;
 
@@ -127,7 +127,7 @@ export class CommentsMongoDbType {
   }
 }
 
-@injectable()
+@Injectable()
 export class DeviceMongoDbType {
   constructor(
     public _id: ObjectId,
@@ -139,7 +139,7 @@ export class DeviceMongoDbType {
   ) {}
 }
 
-@injectable()
+@Injectable()
 export class RateLimitMongoDbType {
   constructor(
     public IP: string,
@@ -148,7 +148,7 @@ export class RateLimitMongoDbType {
   ) {}
 }
 
-@injectable()
+@Injectable()
 export class ReactionMongoDb {
   constructor(
     public _id: ObjectId,
@@ -165,19 +165,7 @@ export type RegistrationDataType = {
   ip: string;
 };
 
-export type RequestWithParams<T> = Request<
-  T,
-  {},
-  {},
-  {},
-  { user: UserViewModel }
->;
-export type RequestWithBody<T> = Request<{}, {}, T>;
+export type RequestWithParams<T> = Request<T, { user: UserViewModel }>;
+export type RequestWithBody<T> = Request<T>;
 
-export type RequestWithUser<U extends UserViewModel> = Request<
-  {},
-  {},
-  {},
-  {},
-  U
->;
+export type RequestWithUser<U extends UserViewModel> = Request<U>;

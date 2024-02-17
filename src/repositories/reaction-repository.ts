@@ -1,10 +1,9 @@
-import "reflect-metadata";
-import { injectable } from "inversify";
+import { Injectable } from '@nestjs/common';
 import {
   ReactionModel,
   ReactionStatusEnum,
-} from "../domain/schemas/reactionInfo.schema";
-import { ObjectId } from "mongodb";
+} from '../domain/schemas/reactionInfo.schema';
+import { ObjectId } from 'mongodb';
 
 interface ReactionData {
   parentId: string;
@@ -15,7 +14,7 @@ interface ReactionData {
   updatedAt: boolean;
 }
 
-@injectable()
+@Injectable()
 export class ReactionsRepository {
   constructor() {}
 

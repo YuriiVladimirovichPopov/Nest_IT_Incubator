@@ -1,7 +1,7 @@
 export function getSearchNameTermFromQuery(
   searchNameTerm: string | undefined,
 ): { searchNameTerm: string } {
-  const defaultNameTerm = { searchNameTerm: "" };
+  const defaultNameTerm = { searchNameTerm: '' };
   if (searchNameTerm) {
     defaultNameTerm.searchNameTerm = searchNameTerm;
     return defaultNameTerm;
@@ -12,7 +12,7 @@ export function getSearchNameTermFromQuery(
 export function getSearchLoginTermFromQuery(
   searchLoginTerm: string | undefined,
 ): { searchLoginTerm: string } {
-  const defaultLoginTerm = { searchLoginTerm: "" };
+  const defaultLoginTerm = { searchLoginTerm: '' };
   if (searchLoginTerm) {
     defaultLoginTerm.searchLoginTerm = searchLoginTerm;
     return defaultLoginTerm;
@@ -23,7 +23,7 @@ export function getSearchLoginTermFromQuery(
 export function getSearchEmailTermFromQuery(
   searchEmailTerm: string | undefined,
 ): { searchEmailTerm: string } {
-  const defaultEmailTerm = { searchEmailTerm: "" };
+  const defaultEmailTerm = { searchEmailTerm: '' };
   if (searchEmailTerm) {
     defaultEmailTerm.searchEmailTerm = searchEmailTerm;
     return defaultEmailTerm;

@@ -1,9 +1,9 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
 
 export const emailAdapter = {
   async sendEmail(email: string, subject: string, code: string) {
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
         user: process.env.MAIL_USER,
         pass: process.env.PASSWORD_USER,
@@ -24,7 +24,7 @@ export const emailAdapter = {
 
   async sendEmailWithRecoveryCode(email: string, recoveryCode: string) {
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
         user: process.env.MAIL_USER,
         pass: process.env.PASSWORD_USER,

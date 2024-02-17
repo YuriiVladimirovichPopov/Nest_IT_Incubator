@@ -1,12 +1,11 @@
-import "reflect-metadata";
-import { ObjectId } from "mongodb";
-import { CommentModel } from "../domain/schemas/comments.schema";
-import { CommentsMongoDbType } from "../types";
-import { ReactionStatusEnum } from "../domain/schemas/reactionInfo.schema";
-import { CommentViewModel } from "../models/comments/commentViewModel";
-import { injectable } from "inversify";
+import { ObjectId } from 'mongodb';
+import { CommentModel } from '../domain/schemas/comments.schema';
+import { CommentsMongoDbType } from '../types';
+import { ReactionStatusEnum } from '../domain/schemas/reactionInfo.schema';
+import { CommentViewModel } from '../models/comments/commentViewModel';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class CommentsRepository {
   async createComment(
     parentId: string,
@@ -46,7 +45,7 @@ export class CommentsRepository {
     content: string,
   ): Promise<CommentsMongoDbType | undefined | boolean> {
     const filter = { _id: new ObjectId(commentId) };
-    let foundComment = await CommentModel.findOne(filter);
+    const foundComment = await CommentModel.findOne(filter);
     if (foundComment) {
       const result = await CommentModel.updateOne(filter, {
         $set: { content: content },

@@ -1,4 +1,4 @@
-import { EmailConfirmationType } from "../../types";
+import { EmailConfirmationType } from '../../types';
 
 export type UserViewModel = {
   id: string;

@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import { AuthViewModel } from "../../models/auth";
+import mongoose from 'mongoose';
+import { AuthViewModel } from '../../models/auth';
 
 export const AuthSchema = new mongoose.Schema<AuthViewModel>({
   email: { type: String, required: true },
@@ -7,4 +7,4 @@ export const AuthSchema = new mongoose.Schema<AuthViewModel>({
   userId: { type: String, required: true },
 });
 
-export const AuthModel = mongoose.model("auth", AuthSchema);
+export const AuthModel = mongoose.model('auth', AuthSchema);

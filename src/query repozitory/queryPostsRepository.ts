@@ -1,22 +1,21 @@
-import "reflect-metadata";
-import { CommentsMongoDbType, PostsMongoDb } from "../types";
-import { PaginatedType, Paginated } from "../routers/helpers/pagination";
-import { ObjectId, WithId } from "mongodb";
-import { PostsViewModel } from "../models/posts/postsViewModel";
-import { CommentModel } from "../domain/schemas/comments.schema";
+import { CommentsMongoDbType, PostsMongoDb } from '../types';
+import { PaginatedType } from 'src/pagination';
+import { ObjectId, WithId } from 'mongodb';
+import { PostsViewModel } from '../models/posts/postsViewModel';
+import { CommentModel } from '../domain/schemas/comments.schema';
 import {
   ExtendedReactionForPostModel,
   PostModel,
-} from "../domain/schemas/posts.schema";
-import { injectable } from "inversify";
+} from '../domain/schemas/posts.schema';
+
 import {
   ReactionModel,
   ReactionStatusEnum,
-  userLoginValid,
-} from "../domain/schemas/reactionInfo.schema";
-import { PostsInputModel } from "../models/posts/postsInputModel";
+} from '../domain/schemas/reactionInfo.schema';
+import { Injectable } from '@nestjs/common';
+import { Paginated } from 'src/pagination';
 
-@injectable()
+@Injectable()
 export class QueryPostRepository {
   _postMapper(
     post: PostsMongoDb,
@@ -57,7 +56,7 @@ export class QueryPostRepository {
   }
 
   async _findPostsByFilter(
-    filter: {},
+    filter: object,
     pagination: PaginatedType,
     userId?: string,
   ): Promise<Paginated<PostsViewModel>> {
@@ -96,7 +95,7 @@ export class QueryPostRepository {
         items: items,
       };
     } catch (error) {
-      console.error("Error while finding posts:", error);
+      console.error('Error while finding posts:', error);
       throw error;
     }
   }
@@ -139,7 +138,7 @@ export class QueryPostRepository {
     pagination: PaginatedType,
   ): Promise<Paginated<CommentsMongoDbType>> {
     const filter = {
-      name: { $regex: pagination.searchNameTerm, $options: "i" },
+      name: { $regex: pagination.searchNameTerm, $options: 'i' },
     };
     const result: WithId<WithId<CommentsMongoDbType>>[] =
       await CommentModel.find(filter)

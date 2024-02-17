@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import { httpStatuses } from "../../routers/helpers/send-status";
-import { ObjectId } from "mongodb";
+import { Request, Response, NextFunction } from 'express';
+import { httpStatuses } from 'src/send-status';
+import { ObjectId } from 'mongodb';
 
 export const userValidationMiddleware = async (
   req: Request,

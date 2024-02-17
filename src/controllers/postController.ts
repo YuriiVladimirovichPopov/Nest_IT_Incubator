@@ -1,25 +1,24 @@
-import "reflect-metadata";
-import { Response, Request } from "express";
-import { PostsService } from "../application/post-service";
-import { CommentViewModel } from "../models/comments/commentViewModel";
-import { getByIdParam } from "../models/getById";
-import { PostsInputModel } from "../models/posts/postsInputModel";
-import { PostsViewModel } from "../models/posts/postsViewModel";
-import { QueryBlogsRepository } from "../query repozitory/queryBlogsRepository";
-import { CommentsQueryRepository } from "../query repozitory/queryCommentsRepository";
-import { QueryPostRepository } from "../query repozitory/queryPostsRepository";
+import { Response, Request } from 'express';
+import { PostsService } from '../application/post-service';
+import { CommentViewModel } from '../models/comments/commentViewModel';
+import { getByIdParam } from '../models/getById';
+import { PostsInputModel } from '../models/posts/postsInputModel';
+import { PostsViewModel } from '../models/posts/postsViewModel';
+import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
+import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
+import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
+
+import { httpStatuses } from 'src/send-status';
+import { RequestWithParams, UsersMongoDbType } from '../types';
+import { PostsRepository } from '../repositories/posts-repository';
+import { Controller, Delete, Get, Post, Put } from '@nestjs/common';
 import {
   Paginated,
-  getPaginationFromQuery,
   PaginatedType,
-} from "../routers/helpers/pagination";
-import { httpStatuses } from "../routers/helpers/send-status";
-import { RequestWithParams, UsersMongoDbType } from "../types";
-import { injectable } from "inversify";
-import { PostsRepository } from "../repositories/posts-repository";
-import { ReactionStatusEnum } from "../domain/schemas/reactionInfo.schema";
+  getPaginationFromQuery,
+} from 'src/pagination';
 
-@injectable()
+@Controller('posts')
 export class PostController {
   queryUserRepository: any;
   commentsRepository: any;
@@ -31,6 +30,7 @@ export class PostController {
     private postsRepository: PostsRepository,
   ) {}
 
+  @Get('post/:id/comments')
   async getCommentsByPostId(
     req: Request,
     res: Response<Paginated<CommentViewModel>>,
@@ -57,7 +57,7 @@ export class PostController {
 
     return res.status(httpStatuses.OK_200).send(allCommentsForPostId);
   }
-
+  /* @Post()
   async createCommentsByPostId(req: Request, res: Response) {
     const postWithId: PostsViewModel | null =
       await this.queryPostRepository.findPostById(
@@ -67,14 +67,14 @@ export class PostController {
     if (!postWithId) {
       return res
         .status(httpStatuses.NOT_FOUND_404)
-        .send({ message: "post not found" });
+        .send({ message: 'post not found' });
     }
 
     const userLogin = await this.queryUserRepository.findLoginById(
       req.body.userId,
     );
     if (!userLogin) {
-      return res.status(httpStatuses.NOT_FOUND_404).send("User not found");
+      return res.status(httpStatuses.NOT_FOUND_404).send('User not found');
     }
 
     const comment: CommentViewModel | null =
@@ -88,8 +88,9 @@ export class PostController {
         },
       );
     return res.status(httpStatuses.CREATED_201).send(comment);
-  }
+  } */
 
+  @Get('posts')
   async getAllPosts(req: Request, res: Response<Paginated<PostsViewModel>>) {
     const pagination = getPaginationFromQuery(
       req.query as unknown as PaginatedType, // TODO bad solution
@@ -106,6 +107,7 @@ export class PostController {
     res.status(httpStatuses.OK_200).send(allPosts);
   }
 
+  @Post('posts')
   async createPostByBlogId(req: Request, res: Response<PostsViewModel | null>) {
     const findBlogById = await this.queryBlogsRepository.findBlogById(
       req.body.blogId,
@@ -124,6 +126,7 @@ export class PostController {
     }
   }
 
+  @Get('posts/:id')
   async getPostById(req: Request, res: Response) {
     const foundPost = await this.postsService.findPostById(
       req.params.id,
@@ -136,6 +139,7 @@ export class PostController {
     }
   }
 
+  @Put('posts/:id')
   async updatePostById(
     req: Request<getByIdParam, PostsInputModel>,
     res: Response<PostsViewModel>,
@@ -152,6 +156,7 @@ export class PostController {
     }
   }
 
+  /* @Put()
   async updateLikesDislikesForPost(req: Request, res: Response) {
     try {
       const postId = req.params.postId;
@@ -164,13 +169,11 @@ export class PostController {
         likeStatus !== ReactionStatusEnum.Dislike &&
         likeStatus !== ReactionStatusEnum.None
       ) {
-        return res
-          .status(httpStatuses.BAD_REQUEST_400)
-          .send({
-            errorsMessages: [
-              { message: "Like status is required", field: "likeStatus" },
-            ],
-          });
+        return res.status(httpStatuses.BAD_REQUEST_400).send({
+          errorsMessages: [
+            { message: 'Like status is required', field: 'likeStatus' },
+          ],
+        });
       }
 
       const updatedPost = await this.postsService.updateLikesDislikesForPost(
@@ -182,18 +185,19 @@ export class PostController {
       if (!updatedPost) {
         return res
           .status(httpStatuses.NOT_FOUND_404)
-          .send({ message: "Post not found" });
+          .send({ message: 'Post not found' });
       } else {
         return res.sendStatus(httpStatuses.NO_CONTENT_204);
       }
     } catch (error) {
-      console.error("Ошибка при обновлении реакций:", error);
+      console.error('Ошибка при обновлении реакций:', error);
       return res
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: "Сервер на кофе-брейке!" });
+        .send({ message: 'Сервер на кофе-брейке!' });
     }
-  }
+  } */
 
+  @Delete('delete/:id')
   async deletePostById(req: RequestWithParams<getByIdParam>, res: Response) {
     const foundPost = await this.postsService.deletePost(req.params.id);
     if (!foundPost) {

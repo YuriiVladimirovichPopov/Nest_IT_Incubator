@@ -1,41 +1,37 @@
-import "reflect-metadata";
-import bcrypt from "bcrypt";
-import add from "date-fns/add";
-import Jwt from "jsonwebtoken";
-import { randomUUID } from "crypto";
-import { ObjectId } from "mongodb";
-import { DeviceMongoDbType, UsersMongoDbType } from "../types";
-import { emailManager } from "../managers/email-manager";
-import { settings } from "../settings";
-import { UserModel } from "../domain/schemas/users.schema";
-import { UserCreateViewModel } from "../models/users/createUser";
-import { DeviceModel } from "../domain/schemas/device.schema";
-import { UsersRepository } from "../repositories/users-repository";
-import { QueryUserRepository } from "../query repozitory/queryUserRepository";
-import { Request } from "express";
-import { injectable } from "inversify";
+//import add from 'date-fns/add';
+import { randomUUID } from 'crypto';
+import { ObjectId } from 'mongodb';
+import { DeviceMongoDbType, UsersMongoDbType } from '../types';
+import { UserModel } from '../domain/schemas/users.schema';
+import { UserCreateViewModel } from '../models/users/createUser';
+import { DeviceModel } from '../domain/schemas/device.schema';
+import { UsersRepository } from '../repositories/users-repository';
+import { QueryUserRepository } from '../query repozitory/queryUserRepository';
+import { Request } from 'express';
+import { Injectable } from '@nestjs/common';
+import { emailManager } from 'src/managers/email-manager';
+//import Jwt from 'jsonwebtoken';
+//import { emailManager } from '../adapters/email-manager';
 
-@injectable()
+@Injectable()
 export class AuthService {
   constructor(
     protected usersRepository: UsersRepository,
     protected queryUserRepository: QueryUserRepository,
   ) {}
-  
+
   async createUser(
     login: string,
     email: string,
     password: string,
   ): Promise<UserCreateViewModel | null> {
-    const passwordSalt = await bcrypt.genSalt(10);
-    const passwordHash = await this._generateHash(password, passwordSalt);
+    const passwordHash = await this._generateHash(password);
 
     const newUser: UsersMongoDbType = {
       _id: new ObjectId(),
       login,
       email,
       passwordHash,
-      passwordSalt,
       createdAt: new Date().toISOString(),
       emailConfirmation: {
         confirmationCode: randomUUID(),
@@ -62,7 +58,7 @@ export class AuthService {
 
     if (!user) return false;
 
-    const passwordHash = await this._generateHash(password, user.passwordSalt);
+    const passwordHash = await this._generateHash(password);
     if (user.passwordHash !== passwordHash) {
       return false;
     }
@@ -79,15 +75,15 @@ export class AuthService {
     }
   }
 
-  async _generateHash(password: string, salt: string) {
-    const hash = await bcrypt.hash(password, salt);
+  async _generateHash(password: string) {
+    const hash = await crypto.hash(password);
     return hash;
   }
 
   async updateConfirmEmailByUser(userId: string): Promise<boolean> {
     const foundUserByEmail = await UserModel.updateOne(
       { _id: new ObjectId(userId) },
-      { $set: { "emailConfirmation.isConfirmed": true } },
+      { $set: { 'emailConfirmation.isConfirmed': true } },
     );
     return foundUserByEmail.matchedCount === 1;
   }
@@ -116,18 +112,18 @@ export class AuthService {
   ): Promise<{ accessToken: string; newRefreshToken: string }> {
     try {
       const accessToken = Jwt.sign({ userId }, settings.accessTokenSecret1, {
-        expiresIn: "10minutes",
+        expiresIn: '10minutes',
       });
 
       const newRefreshToken = Jwt.sign(
         { userId, deviceId },
         settings.refreshTokenSecret2,
-        { expiresIn: "10minutes" },
+        { expiresIn: '10minutes' },
       );
 
       return { accessToken, newRefreshToken };
     } catch (error) {
-      throw new Error("Failed to refresh tokens");
+      throw new Error('Failed to refresh tokens');
     }
   }
 
@@ -186,7 +182,7 @@ export class AuthService {
       await newDevice.save();
       return newDevice;
     } catch (error) {
-      console.error("Error saving new device:", error);
+      console.error('Error saving new device:', error);
       return null;
     }
   }
@@ -196,18 +192,13 @@ export class AuthService {
     newPassword: string,
   ): Promise<any> {
     // TODO: any don't like. need to change this Promise
-    const newPasswordSalt = await bcrypt.genSalt(10);
-    const newHashedPassword = await this._generateHash(
-      newPassword,
-      newPasswordSalt,
-    );
+    const newHashedPassword = await this._generateHash(newPassword);
 
     await UserModel.updateOne(
       { _id: _id },
       {
         $set: {
           passwordHash: newHashedPassword,
-          passwordSalt: newPasswordSalt,
           recoveryCode: null,
         },
       },

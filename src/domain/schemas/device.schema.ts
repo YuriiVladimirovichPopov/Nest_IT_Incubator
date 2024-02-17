@@ -1,6 +1,5 @@
-import mongoose from "mongoose";
-import { DeviceMongoDbType } from "../../types";
-import { ObjectId, WithId } from "mongodb";
+import mongoose from 'mongoose';
+import { DeviceMongoDbType } from '../../types';
 
 export const DeviceSchema = new mongoose.Schema<DeviceMongoDbType>({
   _id: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -11,4 +10,4 @@ export const DeviceSchema = new mongoose.Schema<DeviceMongoDbType>({
   userId: { type: String, required: true },
 });
 
-export const DeviceModel = mongoose.model("device", DeviceSchema);
+export const DeviceModel = mongoose.model('device', DeviceSchema);

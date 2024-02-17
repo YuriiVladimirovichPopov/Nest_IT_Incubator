@@ -1,19 +1,29 @@
-import "reflect-metadata";
-import { Response, Request } from "express";
-import { BlogService } from "../application/blog-service";
-import { BlogInputModel } from "../models/blogs/blogsInputModel";
-import { BlogViewModel } from "../models/blogs/blogsViewModel";
-import { getByIdParam } from "../models/getById";
-import { PostsViewModel } from "../models/posts/postsViewModel";
-import { QueryPostRepository } from "../query repozitory/queryPostsRepository";
-import { Paginated, parsePaginatedType } from "../routers/helpers/pagination";
-import { httpStatuses } from "../routers/helpers/send-status";
-import { RequestWithBody, RequestWithParams } from "../types";
-import { injectable } from "inversify";
-import { PostsRepository } from "../repositories/posts-repository";
-import { UserViewModel } from "../models/users/userViewModel";
+import 'reflect-metadata';
+import { Response, Request } from 'express';
+import { BlogService } from '../application/blog-service';
+import { BlogInputModel } from '../models/blogs/blogsInputModel';
+import { BlogViewModel } from '../models/blogs/blogsViewModel';
+import { getByIdParam } from '../models/getById';
+import { PostsViewModel } from '../models/posts/postsViewModel';
+import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 
-@injectable()
+import { httpStatuses } from 'src/send-status';
+import { RequestWithBody, RequestWithParams } from '../types';
+import { PostsRepository } from '../repositories/posts-repository';
+import { UserViewModel } from '../models/users/userViewModel';
+import {
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
+import { Paginated, parsePaginatedType } from 'src/pagination';
+
+@Controller('blogs')
 export class BlogsController {
   constructor(
     private blogService: BlogService,
@@ -21,13 +31,16 @@ export class BlogsController {
     private queryPostRepository: QueryPostRepository,
   ) {}
 
-  async getAllBlogs(req: Request, res: Response) {
+  @Get('blogs')
+  async getAllBlogs(@Query('Paginated') queryBlogs:) {
     const pagination = parsePaginatedType(req.query);
     const allBlogs: Paginated<BlogViewModel> =
       await this.blogService.findAllBlogs(pagination);
 
     return res.status(httpStatuses.OK_200).send(allBlogs);
   }
+
+  @Post('blogs')
   async createBlogs(
     req: RequestWithBody<BlogViewModel>,
     res: Response<BlogViewModel>,
@@ -36,8 +49,9 @@ export class BlogsController {
     return res.status(httpStatuses.CREATED_201).send(newBlog);
   }
 
+  @Get('blogs/:id/posts')
   async getPostByBlogId(
-    req: Request<{ blogId: string }, {}, { user: UserViewModel }, {}>,
+    req: Request<{ blogId: string }, { user: UserViewModel }>,
     res: Response,
   ) {
     const blogWithPosts = await this.blogService.findBlogById(
@@ -58,6 +72,7 @@ export class BlogsController {
     return res.status(httpStatuses.OK_200).send(foundBlogWithAllPosts);
   }
 
+  @Post('blogs/:id/posts')
   async createPostForBlogById(req: Request, res: Response) {
     const blogId = req.params.blogId;
 
@@ -88,17 +103,15 @@ export class BlogsController {
     }
     return res.sendStatus(httpStatuses.NOT_FOUND_404);
   }
-
-  async getBlogById(
-    req: RequestWithParams<getByIdParam>,
-    res: Response<BlogViewModel>,
-  ) {
-    const foundBlog = await this.blogService.findBlogById(req.params.id);
-    if (!foundBlog) return res.sendStatus(httpStatuses.NOT_FOUND_404);
-
-    return res.status(httpStatuses.OK_200).send(foundBlog);
+  //вроде сделал, надо ли http коды прописывать?
+  @Get('blogs/:id')
+  async getBlogById(@Param(':id') blogId: string): Promise<BlogViewModel> {
+    const foundBlog = await this.blogService.findBlogById(blogId);
+    if (!foundBlog) throw new NotFoundException();
+    return foundBlog;
   }
 
+  @Put('blogs/:id')
   async updateBlogById(
     req: Request<getByIdParam, BlogInputModel>,
     res: Response<BlogViewModel>,
@@ -111,12 +124,13 @@ export class BlogsController {
 
     return res.sendStatus(httpStatuses.NO_CONTENT_204);
   }
-
-  async deleteBlogById(req: RequestWithParams<getByIdParam>, res: Response) {
-    const foundBlog = await this.blogService.deleteBlog(req.params.id);
+  // вроде сделал. Не уверен насчет http статуса!!!
+  @Delete('blogs/:id')
+  async deleteBlogById(@Param('id') blogId: string) {
+    const foundBlog = await this.blogService.deleteBlog(blogId);
     if (!foundBlog) {
-      return res.sendStatus(httpStatuses.NOT_FOUND_404);
+      return new NotFoundException();
     }
-    return res.sendStatus(httpStatuses.NO_CONTENT_204);
+    return httpStatuses.NO_CONTENT_204;
   }
 }

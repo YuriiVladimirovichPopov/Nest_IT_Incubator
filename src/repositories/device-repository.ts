@@ -1,16 +1,15 @@
-import "reflect-metadata";
-import { DeviceMongoDbType } from "../types";
-import { DeviceModel } from "../domain/schemas/device.schema";
-import { injectable } from "inversify";
+import { DeviceMongoDbType } from '../types';
+import { DeviceModel } from '../domain/schemas/device.schema';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class DeviceRepository {
   async findDeviceByUser(deviceId: string): Promise<DeviceMongoDbType | null> {
     try {
       const device = await DeviceModel.findOne({ deviceId });
       return device;
     } catch (error) {
-      console.error("Error finding device by ID:", error);
+      console.error('Error finding device by ID:', error);
       return null;
     }
   }
@@ -28,7 +27,7 @@ export class DeviceRepository {
       ).lean();
       return devices;
     } catch (error) {
-      console.error("Error getting devices by userId:", error);
+      console.error('Error getting devices by userId:', error);
       return [];
     }
   }
@@ -54,7 +53,7 @@ export class DeviceRepository {
       await DeviceModel.deleteMany({ userId, deviceId: { $ne: deviceId } });
       return true;
     } catch (error) {
-      throw new Error("Failed to refresh tokens");
+      throw new Error('Failed to refresh tokens');
     }
   }
 

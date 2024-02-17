@@ -1,10 +1,9 @@
-import mongoose from "mongoose";
-import { PostsMongoDb } from "../../types";
-import { ReactionStatusEnum } from "./reactionInfo.schema";
+import mongoose from 'mongoose';
+import { PostsMongoDb } from '../../types';
 import {
   ExtendedReactionInfoViewModelForPost,
   NewestLikeDetailsViewModel,
-} from "../../models/reaction/reactionInfoViewModel";
+} from '../../models/reaction/reactionInfoViewModel';
 
 export const titleValid = {
   minLength: 1,
@@ -36,7 +35,7 @@ const NewestLikeDetailsForPostSchema =
     { _id: false },
   );
 export const NewestLikeDetailsForPostModel = mongoose.model(
-  "NewestLikeDetailsViewModel",
+  'NewestLikeDetailsViewModel',
   NewestLikeDetailsForPostSchema,
 );
 
@@ -47,7 +46,7 @@ export const ExtendedReactionForPostSchema =
     newestLikes: [{ type: NewestLikeDetailsForPostSchema, required: true }],
   });
 export const ExtendedReactionForPostModel = mongoose.model(
-  "ExtendedReactionForPostModel",
+  'ExtendedReactionForPostModel',
   ExtendedReactionForPostSchema,
 );
 
@@ -82,4 +81,4 @@ export const PostSchema = new mongoose.Schema<PostsMongoDb>({
   extendedLikesInfo: { type: ExtendedReactionForPostSchema, required: true },
 });
 
-export const PostModel = mongoose.model("posts", PostSchema);
+export const PostModel = mongoose.model('posts', PostSchema);

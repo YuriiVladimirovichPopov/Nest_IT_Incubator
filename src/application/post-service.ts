@@ -1,23 +1,22 @@
-import "reflect-metadata";
-import { PostsInputModel } from "../models/posts/postsInputModel";
-import { PostsViewModel } from "../models/posts/postsViewModel";
-import { PostsRepository } from "../repositories/posts-repository";
-import { QueryPostRepository } from "../query repozitory/queryPostsRepository";
-import { Paginated } from "../routers/helpers/pagination";
-import { PaginatedType } from "../routers/helpers/pagination";
-import { injectable } from "inversify";
-import { ReactionsRepository } from "../repositories/reaction-repository";
-import { UserModel } from "../domain/schemas/users.schema";
+import { PostsInputModel } from '../models/posts/postsInputModel';
+import { PostsViewModel } from '../models/posts/postsViewModel';
+import { PostsRepository } from '../repositories/posts-repository';
+import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
+import { Paginated } from 'src/pagination';
+import { PaginatedType } from 'src/pagination';
+import { ReactionsRepository } from '../repositories/reaction-repository';
+import { UserModel } from '../domain/schemas/users.schema';
 import {
   ReactionModel,
   ReactionStatusEnum,
-} from "../domain/schemas/reactionInfo.schema";
-import { ObjectId } from "mongodb";
-import { PostModel } from "../domain/schemas/posts.schema";
-import { ReactionsService } from "./reaction-service";
-import { PostsMongoDb } from "../types";
+} from '../domain/schemas/reactionInfo.schema';
+import { ObjectId } from 'mongodb';
+import { PostModel } from '../domain/schemas/posts.schema';
+import { ReactionsService } from './reaction-service';
+import { PostsMongoDb } from '../types';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class PostsService {
   constructor(
     private queryPostRepository: QueryPostRepository,
@@ -50,7 +49,7 @@ export class PostsService {
   async updateLikesDislikesForPost(
     postId: string,
     userId: string,
-    action: "None" | "Like" | "Dislike",
+    action: 'None' | 'Like' | 'Dislike',
   ) {
     const post = await this.queryPostRepository.findPostById(postId, userId);
 
@@ -66,7 +65,7 @@ export class PostsService {
     if (!reaction) {
       const user = await UserModel.findOne({ _id: new ObjectId(userId) });
       if (!user) {
-        console.error("User not found");
+        console.error('User not found');
         return null;
       }
       reaction = new ReactionModel({
@@ -81,17 +80,17 @@ export class PostsService {
 
     // Обновляем статус реакции в соответствии с новым действием
     switch (action) {
-      case "Like":
+      case 'Like':
         reaction.myStatus = ReactionStatusEnum.Like;
         break;
-      case "Dislike":
+      case 'Dislike':
         reaction.myStatus = ReactionStatusEnum.Dislike;
         break;
-      case "None":
+      case 'None':
         reaction.myStatus = ReactionStatusEnum.None;
         break;
       default:
-        console.error("Invalid action:", action);
+        console.error('Invalid action:', action);
         return null;
     }
 
@@ -116,14 +115,14 @@ export class PostsService {
     userId: string,
   ): Promise<{ likes: number; dislikes: number }> {
     const reactions = await PostModel.aggregate([
-      { $unwind: "$likesInfo" },
+      { $unwind: '$likesInfo' },
       {
         $group: {
-          _id: "$likesInfo.userId",
+          _id: '$likesInfo.userId',
           likes: {
             $sum: {
               $cond: [
-                { $eq: ["$likesInfo.myStatus", ReactionStatusEnum.Like] },
+                { $eq: ['$likesInfo.myStatus', ReactionStatusEnum.Like] },
                 1,
                 0,
               ],
@@ -132,7 +131,7 @@ export class PostsService {
           dislikes: {
             $sum: {
               $cond: [
-                { $eq: ["$likesInfo.myStatus", ReactionStatusEnum.Dislike] },
+                { $eq: ['$likesInfo.myStatus', ReactionStatusEnum.Dislike] },
                 1,
                 0,
               ],
@@ -152,7 +151,7 @@ export class PostsService {
     likeStatus: ReactionStatusEnum,
   ) {
     const post = await this.queryPostRepository.findPostById(postId, userId);
-    if (!post) throw new Error("Comment not found");
+    if (!post) throw new Error('Comment not found');
     return this.reactionsService.updateReactionByParentId(
       postId,
       userId,

@@ -1,19 +1,18 @@
-import "reflect-metadata";
-import { ObjectId } from "mongodb";
-import { PaginatedType } from "../routers/helpers/pagination";
-import { Paginated } from "../routers/helpers/pagination";
-import { CommentsMongoDbType } from "../types";
-import { CommentViewModel } from "../models/comments/commentViewModel";
-import { CommentModel } from "../domain/schemas/comments.schema";
+import { ObjectId } from 'mongodb';
+import { PaginatedType } from 'src/pagination';
+import { Paginated } from 'src/pagination';
+import { CommentsMongoDbType } from '../types';
+import { CommentViewModel } from '../models/comments/commentViewModel';
+import { CommentModel } from '../domain/schemas/comments.schema';
 import {
   ReactionModel,
   ReactionStatusEnum,
-} from "../domain/schemas/reactionInfo.schema";
-import { injectable } from "inversify";
+} from '../domain/schemas/reactionInfo.schema';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class CommentsQueryRepository {
-  constructor() {} 
+  constructor() {}
 
   async getAllCommentsForPost(
     postId: string,
@@ -90,9 +89,9 @@ export class CommentsQueryRepository {
       const reaction = await ReactionModel.findOne({
         userId: userId.toString(),
         parentId: id,
-      }); 
-     
-      myStatus = reaction ? reaction.myStatus : ReactionStatusEnum.None; 
+      });
+
+      myStatus = reaction ? reaction.myStatus : ReactionStatusEnum.None;
     }
 
     return {
@@ -111,11 +110,11 @@ export class CommentsQueryRepository {
   async findCommentsByParentId(
     parentId: string,
     pagination: PaginatedType,
-    userId: string, 
+    userId: string,
   ): Promise<Paginated<CommentViewModel>> {
     const result = await CommentModel.find({ parentId: new ObjectId(parentId) })
       .sort({
-        [pagination.sortBy]: pagination.sortDirection === "asc" ? 1 : -1,
+        [pagination.sortBy]: pagination.sortDirection === 'asc' ? 1 : -1,
       })
       .skip(pagination.skip)
       .limit(pagination.pageSize)

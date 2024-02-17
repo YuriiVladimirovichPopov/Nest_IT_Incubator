@@ -1,21 +1,20 @@
-import "reflect-metadata";
-import { Response, Request } from "express";
-import { ObjectId } from "bson";
-import { error } from "console";
-import { emailAdapter } from "../adapters/email-adapter";
-import { AuthService } from "../application/auth-service";
-import { jwtService } from "../application/jwt-service";
-import { emailManager } from "../managers/email-manager";
-import { CodeType } from "../models/code";
-import { UserInputModel } from "../models/users/userInputModel";
-import { QueryUserRepository } from "../query repozitory/queryUserRepository";
-import { DeviceRepository } from "../repositories/device-repository";
-import { UsersRepository } from "../repositories/users-repository";
-import { httpStatuses } from "../routers/helpers/send-status";
-import { DeviceMongoDbType, UsersMongoDbType, RequestWithBody } from "../types";
-import { injectable } from "inversify";
+import { Injectable } from '@nestjs/common';
+import { Response, Request } from 'express';
+import { ObjectId } from 'bson';
+import { error } from 'console';
+import { emailAdapter } from '../adapters/email-adapter';
+import { AuthService } from '../application/auth-service';
+//import { jwtService } from '../application/jwt-service';
+import { emailManager } from '../managers/email-manager';
+import { CodeType } from '../models/code';
+import { UserInputModel } from '../models/users/userInputModel';
+import { QueryUserRepository } from '../query repozitory/queryUserRepository';
+import { DeviceRepository } from '../repositories/device-repository';
+import { UsersRepository } from '../repositories/users-repository';
+import { httpStatuses } from 'src/send-status';
+import { DeviceMongoDbType, UsersMongoDbType, RequestWithBody } from '../types';
 
-@injectable()
+@Injectable()
 export class AuthController {
   constructor(
     private usersRepository: UsersRepository,
@@ -40,15 +39,15 @@ export class AuthController {
       const lastActiveDate = await jwtService.getLastActiveDate(refreshToken);
       const newDevice: DeviceMongoDbType = {
         _id: new ObjectId(),
-        ip: req.ip || "", 
-        title: req.headers["user-agent"] || "title",
+        ip: req.ip || '',
+        title: req.headers['user-agent'] || 'title',
         lastActiveDate,
         deviceId,
         userId,
       };
       await this.authService.addNewDevice(newDevice);
       res
-        .cookie("refreshToken", refreshToken, { httpOnly: true, secure: true })
+        .cookie('refreshToken', refreshToken, { httpOnly: true, secure: true })
         .status(httpStatuses.OK_200)
         .send({ accessToken: accessToken });
       return;
@@ -56,6 +55,7 @@ export class AuthController {
       return res.sendStatus(httpStatuses.UNAUTHORIZED_401);
     }
   }
+
   async passwordRecovery(req: Request, res: Response) {
     const email = req.body.email;
     const user: UsersMongoDbType | null =
@@ -73,13 +73,14 @@ export class AuthController {
       );
       return res
         .status(httpStatuses.NO_CONTENT_204)
-        .send({ message: "Recovery code sent" });
+        .send({ message: 'Recovery code sent' });
     } catch (error) {
       return res
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: "Сервер на кофе-брейке!" });
+        .send({ message: 'Сервер на кофе-брейке!' });
     }
   }
+
   async newPassword(req: Request, res: Response) {
     const { newPassword, recoveryCode } = req.body;
 
@@ -89,8 +90,8 @@ export class AuthController {
       return res.status(httpStatuses.BAD_REQUEST_400).send({
         errorsMessages: [
           {
-            message: "send recovery code",
-            field: "recoveryCode",
+            message: 'send recovery code',
+            field: 'recoveryCode',
           },
         ],
       });
@@ -102,9 +103,10 @@ export class AuthController {
     if (result.success) {
       return res
         .status(httpStatuses.NO_CONTENT_204)
-        .send("code is valid and new password is accepted");
+        .send('code is valid and new password is accepted');
     }
   }
+
   async me(req: Request, res: Response) {
     const userId = req.userId;
     if (!userId) {
@@ -114,6 +116,7 @@ export class AuthController {
       return res.status(httpStatuses.OK_200).send(userViewModel);
     }
   }
+
   async registrationConfirmation(
     req: RequestWithBody<CodeType>,
     res: Response,
@@ -127,30 +130,31 @@ export class AuthController {
     if (!user) {
       return res.status(httpStatuses.BAD_REQUEST_400).send({
         errorsMessages: [
-          { message: "User not found by this code", field: "code" },
+          { message: 'User not found by this code', field: 'code' },
         ],
       });
     }
     if (user.emailConfirmation!.isConfirmed) {
       return res.status(httpStatuses.BAD_REQUEST_400).send({
-        errorsMessages: [{ message: "Email is confirmed", field: "code" }],
+        errorsMessages: [{ message: 'Email is confirmed', field: 'code' }],
       });
     }
     if (user.emailConfirmation!.expirationDate < currentDate) {
       return res.status(httpStatuses.BAD_REQUEST_400).send({
-        errorsMessages: [{ message: "The code is exparied", field: "code" }],
+        errorsMessages: [{ message: 'The code is exparied', field: 'code' }],
       });
     }
     if (user.emailConfirmation!.confirmationCode !== req.body.code) {
       return res
         .status(httpStatuses.BAD_REQUEST_400)
-        .send({ errorsMessages: [{ message: "Invalid code", field: "code" }] });
+        .send({ errorsMessages: [{ message: 'Invalid code', field: 'code' }] });
     }
 
     await this.authService.updateConfirmEmailByUser(user._id.toString());
 
     return res.sendStatus(httpStatuses.NO_CONTENT_204);
   }
+
   async registration(req: RequestWithBody<UserInputModel>, res: Response) {
     const user = await this.authService.createUser(
       req.body.login,
@@ -164,6 +168,7 @@ export class AuthController {
       return res.sendStatus(httpStatuses.BAD_REQUEST_400);
     }
   }
+
   async registrationEmailResending(
     req: RequestWithBody<UsersMongoDbType>,
     res: Response,
@@ -176,7 +181,7 @@ export class AuthController {
     if (user.emailConfirmation.isConfirmed) {
       return res
         .status(httpStatuses.BAD_REQUEST_400)
-        .send({ message: "isConfirmed" });
+        .send({ message: 'isConfirmed' });
     }
 
     const userId = req.body._id;
@@ -189,10 +194,11 @@ export class AuthController {
         updatedUser!.emailConfirmation.confirmationCode,
       );
     } catch {
-      error("email is already confirmed", error);
+      error('email is already confirmed', error);
     }
     return res.sendStatus(httpStatuses.NO_CONTENT_204);
   }
+
   async refreshToken(req: Request, res: Response) {
     const deviceId = req.deviceId!;
     const userId = req.userId!;
@@ -208,7 +214,7 @@ export class AuthController {
       );
       return res
         .status(httpStatuses.OK_200)
-        .cookie("refreshToken", tokens.newRefreshToken, {
+        .cookie('refreshToken', tokens.newRefreshToken, {
           httpOnly: true,
           secure: true,
         })
@@ -216,9 +222,10 @@ export class AuthController {
     } catch (error) {
       return res
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: "Сервер на кофе-брейке!" });
+        .send({ message: 'Сервер на кофе-брейке!' });
     }
   }
+
   async logOut(req: Request, res: Response) {
     const deviceId = req.deviceId!;
     const userId = req.userId!;
@@ -231,7 +238,7 @@ export class AuthController {
       console.error(error);
       return res
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: "Сервер на кофе-брейке!" });
+        .send({ message: 'Сервер на кофе-брейке!' });
     }
   }
 }

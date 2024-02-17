@@ -1,8 +1,7 @@
-import "reflect-metadata";
-import { injectable } from "inversify";
-import { ExtendedReactionInfoViewModelForPost } from "../reaction/reactionInfoViewModel";
+import { ExtendedReactionInfoViewModelForPost } from '../reaction/reactionInfoViewModel';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class PostsViewModel {
   id: string;
   title: string;

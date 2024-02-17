@@ -1,6 +1,6 @@
-import { Response, Request, NextFunction } from "express";
-import { validationResult } from "express-validator";
-import { httpStatuses } from "../routers/helpers/send-status";
+/* import { Response, Request, NextFunction } from 'express';
+import { validationResult } from 'express-validator';
+import { httpStatuses } from 'src/send-status';
 
 export const authorizationValidation = (
   req: Request,
@@ -9,8 +9,8 @@ export const authorizationValidation = (
 ) => {
   const auth = req.headers.authorization;
   if (!auth) return res.sendStatus(401);
-  const [authType, authData] = auth.split(" ");
-  if (authType !== "Basic" || authData !== "YWRtaW46cXdlcnR5")
+  const [authType, authData] = auth.split(' ');
+  if (authType !== 'Basic' || authData !== 'YWRtaW46cXdlcnR5')
     return res.sendStatus(401);
   return next();
 };
@@ -35,3 +35,4 @@ export const inputValidationErrors = (
     next();
   }
 };
+ */

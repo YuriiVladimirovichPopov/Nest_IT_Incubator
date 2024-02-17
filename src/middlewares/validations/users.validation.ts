@@ -1,43 +1,43 @@
-import { body } from "express-validator";
-import { inputValidationErrors } from "../input-validation-middleware";
-import { UsersRepository, container } from "../../composition-root";
+/* import { body } from 'express-validator';
+import { inputValidationErrors } from '../input-validation-middleware';
+import { UsersRepository, container } from '../../composition-root';
 
 const usersRepository = container.resolve<UsersRepository>(UsersRepository);
 
-const loginValidation = body("login")
+const loginValidation = body('login')
   .isString()
   .isLength({ min: 3, max: 10 })
   .trim()
-  .withMessage("incorrect login")
+  .withMessage('incorrect login')
   .custom(async (login) => {
     const user = await usersRepository.findByLoginOrEmail(login);
     if (user) {
-      throw new Error("User already exists");
+      throw new Error('User already exists');
     }
     return true;
   });
 
-const passwordValidation = body("password")
+const passwordValidation = body('password')
   .isString()
   .isLength({ min: 6, max: 20 })
   .trim()
-  .withMessage("incorrect password");
+  .withMessage('incorrect password');
 
-const emailValidation = body("email")
+const emailValidation = body('email')
   .isString()
   .trim()
   .isEmail()
   .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
-  .withMessage("incorrect email")
+  .withMessage('incorrect email')
   .custom(async (email) => {
     const user = await usersRepository.findByLoginOrEmail(email);
     if (user) {
-      throw new Error("User already exists");
+      throw new Error('User already exists');
     }
     return true;
   });
 
-const loginOrEmailValidation = body("loginOrEmail")
+const loginOrEmailValidation = body('loginOrEmail')
   .isString()
   .trim()
   .isLength({ min: 3, max: 30 });
@@ -55,3 +55,4 @@ export const updateUserValidation = [
   emailValidation,
   inputValidationErrors,
 ];
+ */

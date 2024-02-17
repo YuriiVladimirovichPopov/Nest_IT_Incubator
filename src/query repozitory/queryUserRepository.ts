@@ -1,13 +1,10 @@
-import "reflect-metadata";
-import { randomUUID } from "crypto";
-import { UsersMongoDbType } from "../types";
-import { UserModel } from "../domain/schemas/users.schema";
-import mongoose from "mongoose";
-import { injectable } from "inversify";
+import { randomUUID } from 'crypto';
+import { UsersMongoDbType } from '../types';
+import { UserModel } from '../domain/schemas/users.schema';
+import mongoose from 'mongoose';
+import { Injectable } from '@nestjs/common';
 
-const filter: mongoose.FilterQuery<UsersMongoDbType> = {};
-
-@injectable()
+@Injectable()
 export class QueryUserRepository {
   _userMapper(user: UsersMongoDbType) {
     return {
@@ -25,7 +22,6 @@ export class QueryUserRepository {
       { _id: new mongoose.Types.ObjectId(id) },
       {
         projection: {
-          passwordSalt: 0,
           passwordHash: 0,
           emailConfirmation: 0,
           refreshTokenBlackList: 0,

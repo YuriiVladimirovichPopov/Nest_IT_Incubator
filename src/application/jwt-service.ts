@@ -1,8 +1,5 @@
-import "reflect-metadata";
-import jwt from "jsonwebtoken";
-import { settings } from "../settings";
-import { UsersMongoDbType } from "../types";
-import { injectable } from "inversify";
+/* import { UsersMongoDbType } from '../types';
+import { Injectable } from '@nestjs/common';
 
 export type Payload = {
   userId: string;
@@ -11,14 +8,14 @@ export type Payload = {
   exp: number;
 };
 
-@injectable()
+@Injectable()
 export class JWTService {
   createJWT(user: UsersMongoDbType) {
     const token = jwt.sign(
       { userId: user._id.toString() },
       settings.accessTokenSecret1,
       {
-        expiresIn: "10m",
+        expiresIn: '10m',
       },
     );
     return token;
@@ -37,7 +34,7 @@ export class JWTService {
     const refToken = jwt.sign(
       { userId, deviceId },
       settings.refreshTokenSecret2,
-      { expiresIn: "10m" },
+      { expiresIn: '10m' },
     );
     return refToken;
   }
@@ -49,3 +46,4 @@ export class JWTService {
 }
 
 export const jwtService = new JWTService();
+ */

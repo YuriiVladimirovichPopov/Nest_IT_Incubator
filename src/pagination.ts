@@ -1,11 +1,11 @@
-import { ParsedQs } from "qs";
+import { ParsedQs } from 'qs';
 
 export const parsePaginatedType = (query: ParsedQs): PaginatedType => {
   return {
     pageNumber: parseInt(query.pageNumber as string, 10) || 1,
     pageSize: parseInt(query.pageSize as string, 10) || 10,
-    sortBy: (query.sortBy as string) || "createdAt",
-    sortDirection: (query.sortDirection as string) === "asc" ? "asc" : "desc",
+    sortBy: (query.sortBy as string) || 'createdAt',
+    sortDirection: (query.sortDirection as string) === 'asc' ? 'asc' : 'desc',
     skip:
       (parseInt(query.pageNumber as string, 10) - 1) *
       (parseInt(query.pageSize as string, 10) || 10),
@@ -26,7 +26,7 @@ export type Paginated<T> = {
 export type PaginatedType = {
   pageNumber: number;
   pageSize: number;
-  sortDirection: "asc" | "desc";
+  sortDirection: 'asc' | 'desc';
   sortBy: string;
   skip: number;
   searchNameTerm?: string;
@@ -38,7 +38,7 @@ export type DefaultPagination = {
   pageNumber: number;
   pageSize: number;
   sortBy: string;
-  sortDirection: "asc" | "desc";
+  sortDirection: 'asc' | 'desc';
   skip: number;
 };
 
@@ -53,30 +53,30 @@ export const getPaginationFromQuery = (
   const defaultValues: PaginatedType = {
     pageNumber: 1,
     pageSize: 10,
-    sortDirection: "desc",
-    sortBy: "createdAt",
+    sortDirection: 'desc',
+    sortBy: 'createdAt',
     skip: 0,
   };
   if (query.sortBy) {
     defaultValues.sortBy = query.sortBy;
   }
 
-  if (query.sortDirection && query.sortDirection === "asc") {
+  if (query.sortDirection && query.sortDirection === 'asc') {
     defaultValues.sortDirection = query.sortDirection;
   }
 
   if (
     query.pageNumber &&
     !isNaN(parseInt(query.pageNumber.toString(), 10)) &&
-    parseInt(query.pageNumber.toString(), 10) > 0 
+    parseInt(query.pageNumber.toString(), 10) > 0
   ) {
     defaultValues.pageNumber = parseInt(query.pageNumber.toString(), 10);
   }
 
   if (
     query.pageSize &&
-    !isNaN(parseInt(query.pageSize.toString(), 10)) && 
-    parseInt(query.pageSize.toString(), 10) > 0 
+    !isNaN(parseInt(query.pageSize.toString(), 10)) &&
+    parseInt(query.pageSize.toString(), 10) > 0
   ) {
     defaultValues.pageSize = parseInt(query.pageSize.toString(), 10);
   }
@@ -94,8 +94,8 @@ export const getDefaultPagination = (
   query: PaginatedType,
 ): DefaultPagination => {
   const defaultValues: DefaultPagination = {
-    sortBy: "createdAt",
-    sortDirection: "desc",
+    sortBy: 'createdAt',
+    sortDirection: 'desc',
     pageNumber: 1,
     pageSize: 10,
     skip: 0,
@@ -105,7 +105,7 @@ export const getDefaultPagination = (
     defaultValues.sortBy = query.sortBy;
   }
 
-  if (query.sortDirection && query.sortDirection === "asc") {
+  if (query.sortDirection && query.sortDirection === 'asc') {
     defaultValues.sortDirection = query.sortDirection;
   }
 
@@ -124,8 +124,8 @@ export const getDefaultPagination = (
 export const getUsersPagination = (query: PaginatedType): UserPagination => {
   const defaultValues: UserPagination = {
     ...getDefaultPagination(query),
-    searchEmailTerm: "",
-    searchLoginTerm: "",
+    searchEmailTerm: '',
+    searchLoginTerm: '',
   };
 
   if (query.searchEmailTerm)

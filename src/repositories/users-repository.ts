@@ -1,16 +1,15 @@
-import "reflect-metadata";
-import { ObjectId } from "mongodb";
-import { UsersMongoDbType } from "../types";
-import { UserPagination } from "../routers/helpers/pagination";
-import { UserViewModel } from "../models/users/userViewModel";
-import { Paginated } from "../routers/helpers/pagination";
-import { UserCreateViewModel } from "../models/users/createUser";
-import { UserModel } from "../domain/schemas/users.schema";
-import { randomUUID } from "crypto";
-import { PostsViewModel } from "../models/posts/postsViewModel";
-import { injectable } from "inversify";
+import { ObjectId } from 'mongodb';
+import { UsersMongoDbType } from '../types';
+import { UserPagination } from 'src/pagination';
+import { UserViewModel } from '../models/users/userViewModel';
+import { Paginated } from 'src/pagination';
+import { UserCreateViewModel } from '../models/users/createUser';
+import { UserModel } from '../domain/schemas/users.schema';
+import { randomUUID } from 'crypto';
+import { PostsViewModel } from '../models/posts/postsViewModel';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class UsersRepository {
   _userMapper(user: UsersMongoDbType) {
     return {
@@ -30,18 +29,18 @@ export class UsersRepository {
     if (pagination.searchEmailTerm && pagination.searchLoginTerm) {
       filter = {
         $or: [
-          { email: { $regex: pagination.searchEmailTerm, $options: "i" } },
-          { login: { $regex: pagination.searchLoginTerm, $options: "i" } },
+          { email: { $regex: pagination.searchEmailTerm, $options: 'i' } },
+          { login: { $regex: pagination.searchLoginTerm, $options: 'i' } },
         ],
       };
     } else if (pagination.searchEmailTerm) {
-      filter = { email: { $regex: pagination.searchEmailTerm, $options: "i" } };
+      filter = { email: { $regex: pagination.searchEmailTerm, $options: 'i' } };
     } else if (pagination.searchLoginTerm) {
-      filter = { login: { $regex: pagination.searchLoginTerm, $options: "i" } };
+      filter = { login: { $regex: pagination.searchLoginTerm, $options: 'i' } };
     }
 
     const result: UsersMongoDbType[] = await UserModel.find(filter, {
-      projection: { passwordSalt: 0, passwordHash: 0 },
+      projection: { passwordHash: 0 },
     })
 
       .sort({ [pagination.sortBy]: pagination.sortDirection })
@@ -76,11 +75,11 @@ export class UsersRepository {
 
   async findUserByConfirmationCode(emailConfirmationCode: string) {
     const user = await UserModel.findOne({
-      "emailConfirmation.confirmationCode": emailConfirmationCode,
+      'emailConfirmation.confirmationCode': emailConfirmationCode,
     });
     return user;
   }
- 
+
   async createUser(newUser: UsersMongoDbType): Promise<UserCreateViewModel> {
     await UserModel.insertMany(newUser);
     return {

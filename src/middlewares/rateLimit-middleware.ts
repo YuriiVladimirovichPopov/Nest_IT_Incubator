@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express";
-import { RateLimitMongoDbType } from "../types";
-import { httpStatuses } from "../routers/helpers/send-status";
-import { RateLimitModel } from "../domain/schemas/rateLimit.schema";
+import { Request, Response, NextFunction } from 'express';
+import { RateLimitMongoDbType } from '../types';
+import { httpStatuses } from 'src/send-status';
+import { RateLimitModel } from '../domain/schemas/rateLimit.schema';
 
 const maxRequests = 5;
 const interval = 10 * 1000;
@@ -12,7 +12,7 @@ export async function customRateLimit(
   res: Response,
   next: NextFunction,
 ) {
-  const IP = req.ip || "";
+  const IP = req.ip || '';
   const URL = req.url;
   const date = new Date();
 

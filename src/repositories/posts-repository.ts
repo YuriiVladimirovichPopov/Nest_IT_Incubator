@@ -1,22 +1,19 @@
-import "reflect-metadata";
-import { PostsMongoDb } from "../types";
-import { ObjectId } from "mongodb";
-import { PostsInputModel } from "../models/posts/postsInputModel";
-import { PostsViewModel } from "../models/posts/postsViewModel";
-import { PostModel } from "../domain/schemas/posts.schema";
-import { QueryBlogsRepository } from "../query repozitory/queryBlogsRepository";
-import { injectable } from "inversify";
-import { ExtendedReactionInfoViewModelForPost } from "../models/reaction/reactionInfoViewModel";
-import { ExtendedReactionForPostModel } from "../domain/schemas/posts.schema";
+import { PostsMongoDb } from '../types';
+import { ObjectId } from 'mongodb';
+import { PostsInputModel } from '../models/posts/postsInputModel';
+import { PostsViewModel } from '../models/posts/postsViewModel';
+import { PostModel } from '../domain/schemas/posts.schema';
+import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
+import { ExtendedReactionInfoViewModelForPost } from '../models/reaction/reactionInfoViewModel';
+import { ExtendedReactionForPostModel } from '../domain/schemas/posts.schema';
 import {
   ReactionModel,
   ReactionStatusEnum,
-} from "../domain/schemas/reactionInfo.schema";
-import { UserInputModel } from "../models/users/userInputModel";
-import { UserModel } from "../domain/schemas/users.schema";
-import { UserViewModel } from "../models/users/userViewModel";
+} from '../domain/schemas/reactionInfo.schema';
+import { UserViewModel } from '../models/users/userViewModel';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class PostsRepository {
   private queryBlogsRepository: QueryBlogsRepository;
   constructor() {
@@ -88,7 +85,7 @@ export class PostsRepository {
 
       return this.postMapper(createPostForBlog, reaction);
     } catch (error) {
-      console.error("Error creating post:", error);
+      console.error('Error creating post:', error);
       return null;
     }
   }
@@ -137,7 +134,7 @@ export class PostsRepository {
 
       return postsViewModel;
     } catch (error) {
-      console.error("Error creating post:", error);
+      console.error('Error creating post:', error);
       return null;
     }
   }
@@ -166,7 +163,7 @@ export class PostsRepository {
     ]);
 
     // Получаем информацию о 3-х последних лайках
-    const newestLikes = await ReactionModel.find({ 
+    const newestLikes = await ReactionModel.find({
       parentId: post.id.toString(),
       myStatus: ReactionStatusEnum.Like,
     })

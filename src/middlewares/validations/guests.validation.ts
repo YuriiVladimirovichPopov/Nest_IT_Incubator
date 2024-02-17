@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from "express";
-import { jwtService } from "../../application/jwt-service";
-import { UserModel } from "../../domain/schemas/users.schema";
-import { ObjectId } from "mongodb";
-import { UsersMongoDbType } from "../../types";
+/* import { Request, Response, NextFunction } from 'express';
+import { jwtService } from '../../application/jwt-service';
+import { UserModel } from '../../domain/schemas/users.schema';
+import { ObjectId } from 'mongodb';
+import { UsersMongoDbType } from '../../types';
 
 export const guestAccessMiddleware = async (
   req: Request,
@@ -11,11 +11,11 @@ export const guestAccessMiddleware = async (
 ) => {
   try {
     const { authorization } = req.headers;
-    if (!authorization || !authorization.startsWith("Bearer ")) {
+    if (!authorization || !authorization.startsWith('Bearer ')) {
       return next();
     }
 
-    const token = authorization.split(" ")[1];
+    const token = authorization.split(' ')[1];
 
     const userId = await jwtService.getUserIdByToken(token);
 
@@ -33,6 +33,7 @@ export const guestAccessMiddleware = async (
 
     return next();
   } catch (error) {
-    console.log("Error in guestAccessMiddleware", error);
+    console.log('Error in guestAccessMiddleware', error);
   }
 };
+ */

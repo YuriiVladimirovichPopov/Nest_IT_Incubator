@@ -1,6 +1,5 @@
-import mongoose from "mongoose";
-import { BlogsMongoDbType } from "../../types";
-import { ObjectId, WithId } from "mongodb";
+import mongoose from 'mongoose';
+import { BlogsMongoDbType } from '../../types';
 
 export const nameValid = {
   minLength: 1,
@@ -30,4 +29,4 @@ export const BlogSchema = new mongoose.Schema<BlogsMongoDbType>({
   isMembership: { type: Boolean, required: true },
 });
 
-export const BlogModel = mongoose.model("blogs", BlogSchema);
+export const BlogModel = mongoose.model('blogs', BlogSchema);
