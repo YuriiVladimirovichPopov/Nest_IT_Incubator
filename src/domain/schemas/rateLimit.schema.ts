@@ -1,8 +1,7 @@
 import { HydratedDocument } from 'mongoose';
-import { RateLimitMongoDbType } from '../../types';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export type RateLimitDocument = HydratedDocument<RateLimitMongoDbType>
+export type RateLimitDocument = HydratedDocument<RateLimit>;
 @Schema()
 export class RateLimit {
   @Prop({ type: String, required: true })

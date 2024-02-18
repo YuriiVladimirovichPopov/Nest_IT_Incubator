@@ -1,9 +1,5 @@
 import mongoose, { HydratedDocument } from 'mongoose';
 import { PostsMongoDb } from '../../types';
-import {
-  ExtendedReactionInfoViewModelForPost,
-  NewestLikeDetailsViewModel,
-} from '../../models/reaction/reactionInfoViewModel';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export const titleValid = {
