@@ -1,6 +1,5 @@
-import mongoose from 'mongoose';
-import { EmailConfirmationType, UsersMongoDbType } from '../../types';
-import { EmailConfirmationSchema } from './emailConfirmation.schema';
+import mongoose, { HydratedDocument } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export const loginValid = {
   minLength: 3,
@@ -17,21 +16,48 @@ export const loginOrEmailValid = {
   maxLength: 30,
 };
 
-export const AccountData = new mongoose.Schema<EmailConfirmationType>({});
+export type EmailConfirmationDocument = HydratedDocument<EmailConfirmation>; // TODO: been EmailConfirmationType
 
-export const UserSchema = new mongoose.Schema<UsersMongoDbType>({
-  _id: { type: mongoose.Schema.Types.ObjectId, required: true },
-  login: {
-    type: String,
-    required: true,
-    minLength: loginValid.minLength,
-    maxLength: loginValid.maxLength,
-  },
-  email: { type: String, required: true },
-  createdAt: { type: String, required: true },
-  passwordHash: { type: String, required: true },
-  emailConfirmation: { type: EmailConfirmationSchema, required: true },
-  recoveryCode: { type: String },
-});
+@Schema()
+export class EmailConfirmation {
+  @Prop({ required: true, type: Boolean })
+  isConfirmed: boolean;
 
-export const UserModel = mongoose.model('users', UserSchema);
+  @Prop({ required: true, type: String })
+  confirmationCode: string;
+
+  @Prop({ required: true, type: Date })
+  expirationDate: Date;
+}
+export const AccountDataSchema = // TODO: may be need to change NAME? because a little don't understand
+  SchemaFactory.createForClass(EmailConfirmation);
+
+export type UserDocument = HydratedDocument<User>; //TODO: been UsersMongoDbType
+
+@Schema()
+export class User {
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId })
+  _id: mongoose.Schema.Types.ObjectId;
+
+  @Prop({ required: true, type: String })
+  login: string;
+  // minLength: loginValid.minLength,
+  // maxLength: loginValid.maxLength,
+
+  @Prop({ required: true, type: String })
+  email: string;
+
+  @Prop({ required: true, type: String })
+  createdAt: string;
+
+  @Prop({ required: true, type: String })
+  passwordHash: string;
+
+  @Prop({ required: true, type: AccountDataSchema })
+  emailConfirmation: EmailConfirmation;
+
+  @Prop({ type: String })
+  recoveryCode: string;
+}
+
+export const UserSchema = SchemaFactory.createForClass(User);

@@ -1,25 +1,53 @@
 import mongoose, { HydratedDocument } from 'mongoose';
-import { CommentsMongoDbType } from '../../types';
-import { commentatorInfoSchema } from './commentatorInfo.schema';
-import { LikesInfoSchema } from './reactionInfo.schema';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export const contentValid = {
-  minLength: 20,
-  maxLength: 300,
-};
+export type CommentatorInfoDocument = HydratedDocument<CommentatorInfo>;
 
-export const CommentSchema = new mongoose.Schema<CommentsMongoDbType>({
-  _id: { type: mongoose.Schema.Types.ObjectId, required: true },
-  postId: { type: String, required: true },
-  content: {
-    type: String,
-    required: true,
-    minLength: contentValid.minLength,
-    maxLength: contentValid.maxLength,
-  },
-  commentatorInfo: { type: commentatorInfoSchema, required: true },
-  createdAt: { type: String, required: true },
-  likesInfo: { type: LikesInfoSchema, required: true },
-});
+@Schema({ _id: false })
+export class CommentatorInfo {
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId })
+  userId: mongoose.Schema.Types.ObjectId;
 
-export const CommentModel = mongoose.model('comments', CommentSchema);
+  @Prop({ required: true, type: String })
+  userLogin: string;
+}
+
+export const CommentatorInfoSchema =
+  SchemaFactory.createForClass(CommentatorInfo);
+
+export type ReactionsInfoDocument = HydratedDocument<ReactionsInfo>;
+
+@Schema({ _id: false })
+export class ReactionsInfo {
+  @Prop({ required: true, type: Number })
+  likesCount: number;
+
+  @Prop({ required: true, type: Number })
+  dislikesCount: number;
+}
+export const ReactionsInfoSchema = SchemaFactory.createForClass(ReactionsInfo);
+
+export type CommentDocument = HydratedDocument<Comment>;
+
+@Schema()
+export class Comment {
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId })
+  _id: mongoose.Schema.Types.ObjectId;
+
+  @Prop({ required: true, type: String })
+  postId: string;
+
+  @Prop({ required: true, type: String })
+  content: string;
+
+  @Prop({ required: true, type: CommentatorInfoSchema })
+  commentatorInfo: CommentatorInfo;
+
+  @Prop({ required: true, type: String })
+  createdAt: string;
+
+  @Prop({ required: true, type: ReactionsInfoSchema })
+  likesInfo: ReactionsInfo;
+}
+
+export const CommentSchema = SchemaFactory.createForClass(Comment);

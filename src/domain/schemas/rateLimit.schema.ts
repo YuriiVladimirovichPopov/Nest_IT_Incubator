@@ -1,10 +1,17 @@
-import mongoose from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { RateLimitMongoDbType } from '../../types';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export const RateLimitSchema = new mongoose.Schema<RateLimitMongoDbType>({
-  IP: { type: String, required: true },
-  URL: { type: String, required: true },
-  date: { type: Date, required: true },
-});
+export type RateLimitDocument = HydratedDocument<RateLimitMongoDbType>
+@Schema()
+export class RateLimit {
+  @Prop({ type: String, required: true })
+  IP: string;
 
-export const RateLimitModel = mongoose.model('rateLimit', RateLimitSchema);
+  @Prop({ type: String, required: true })
+  URL: string;
+
+  @Prop({ type: Date, required: true })
+  date: Date;
+}
+export const RateLimitSchema = SchemaFactory.createForClass(RateLimit);

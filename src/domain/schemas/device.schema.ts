@@ -1,13 +1,26 @@
-import mongoose from 'mongoose';
-import { DeviceMongoDbType } from '../../types';
+import mongoose, { HydratedDocument } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export const DeviceSchema = new mongoose.Schema<DeviceMongoDbType>({
-  _id: { type: mongoose.Schema.Types.ObjectId, required: true },
-  ip: { type: String, required: true },
-  title: { type: String, required: true },
-  lastActiveDate: { type: String, required: true },
-  deviceId: { type: String, required: true },
-  userId: { type: String, required: true },
-});
+export type DeviceDocument = HydratedDocument<Device>;
+@Schema()
+export class Device {
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId })
+  _id: mongoose.Schema.Types.ObjectId;
 
-export const DeviceModel = mongoose.model('device', DeviceSchema);
+  @Prop({ required: true, type: String })
+  ip: string;
+
+  @Prop({ required: true, type: String })
+  title: string;
+
+  @Prop({ required: true, type: String })
+  lastActiveDate: string;
+
+  @Prop({ required: true, type: String })
+  deviceId: string;
+
+  @Prop({ required: true, type: String })
+  userId: string;
+}
+
+export const DeviceSchema = SchemaFactory.createForClass(Device);

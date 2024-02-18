@@ -1,4 +1,5 @@
-import mongoose from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 
 export const userLoginValid = {
   minLength: 3,
@@ -11,33 +12,26 @@ export enum ReactionStatusEnum {
   Dislike = 'Dislike',
 }
 
-export const ReactionSchema = new mongoose.Schema(
-  {
-    _id: { type: mongoose.Schema.Types.ObjectId, required: true },
-    parentId: { type: String, required: true },
-    userId: { type: String, required: true },
-    userLogin: {
-      type: String,
-      required: true,
-      minLength: userLoginValid.minLength,
-      maxLength: userLoginValid.maxLength,
-    },
-    myStatus: {
-      type: String,
-      required: true,
-      enum: Object.values(ReactionStatusEnum),
-    },
-    createdAt: { type: String, required: true },
-  },
-  { _id: true, versionKey: false },
-);
-export const ReactionModel = mongoose.model('reaction', ReactionSchema);
+export type ReactionDocument = HydratedDocument<Reaction>;
 
-export const LikesInfoSchema = new mongoose.Schema(
-  {
-    likesCount: { type: Number, required: true },
-    dislikesCount: { type: Number, required: true },
-  },
-  { _id: false },
-);
-export const LikesInfoModel = mongoose.model('LikesInfo', LikesInfoSchema);
+@Schema({ _id: true, versionKey: false })
+export class Reaction {
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId })
+  _id: mongoose.Schema.Types.ObjectId;
+
+  @Prop({ required: true, type: String })
+  parentId: string;
+
+  @Prop({ required: true, type: String })
+  userId: string;
+
+  @Prop({ required: true, type: String })
+  userLogin: string;
+
+  @Prop({ required: true, enum: ReactionStatusEnum })
+  myStatus: ReactionStatusEnum;
+
+  @Prop({ required: true, type: String })
+  createdAt: string;
+}
+export const ReactionSchema = SchemaFactory.createForClass(Reaction);

@@ -8,7 +8,7 @@ import { PostsViewModel } from '../models/posts/postsViewModel';
 import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 
 import { httpStatuses } from 'src/send-status';
-import { RequestWithBody, RequestWithParams } from '../types';
+import { RequestWithBody } from '../types';
 import { PostsRepository } from '../repositories/posts-repository';
 import { UserViewModel } from '../models/users/userViewModel';
 import {
@@ -21,7 +21,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { Paginated, parsePaginatedType } from 'src/pagination';
+import { Paginated, PaginatedType, parsePaginatedType } from 'src/pagination';
 
 @Controller('blogs')
 export class BlogsController {
@@ -30,14 +30,12 @@ export class BlogsController {
     private postsRepository: PostsRepository,
     private queryPostRepository: QueryPostRepository,
   ) {}
-
+  //вроде сделал, но не уверен что работает
   @Get('blogs')
-  async getAllBlogs(@Query('Paginated') queryBlogs:) {
-    const pagination = parsePaginatedType(req.query);
-    const allBlogs: Paginated<BlogViewModel> =
-      await this.blogService.findAllBlogs(pagination);
-
-    return res.status(httpStatuses.OK_200).send(allBlogs);
+  async getAllBlogs(
+    @Query('Paginated') queryBlogs: PaginatedType,
+  ): Promise<Paginated<BlogViewModel>> {
+    return this.blogService.findAllBlogs(queryBlogs);
   }
 
   @Post('blogs')

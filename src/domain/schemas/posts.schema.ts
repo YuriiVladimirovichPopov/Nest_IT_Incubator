@@ -1,9 +1,10 @@
-import mongoose from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 import { PostsMongoDb } from '../../types';
 import {
   ExtendedReactionInfoViewModelForPost,
   NewestLikeDetailsViewModel,
 } from '../../models/reaction/reactionInfoViewModel';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export const titleValid = {
   minLength: 1,
@@ -25,60 +26,76 @@ export const blogNameValid = {
   maxLength: 15,
 };
 
-const NewestLikeDetailsForPostSchema =
-  new mongoose.Schema<NewestLikeDetailsViewModel>(
-    {
-      addedAt: { type: String, required: true },
-      userId: { type: String, required: true },
-      login: { type: String, required: true },
-    },
-    { _id: false },
-  );
-export const NewestLikeDetailsForPostModel = mongoose.model(
-  'NewestLikeDetailsViewModel',
-  NewestLikeDetailsForPostSchema,
+export type NewestLikeDetailsForPostdocument =
+  HydratedDocument<NewestLikeDetailsForPost>;
+@Schema({ _id: false })
+export class NewestLikeDetailsForPost {
+  @Prop({ type: String, required: true })
+  addedAt: string;
+
+  @Prop({ type: String, required: true })
+  userId: string;
+
+  @Prop({ type: String, required: true })
+  login: string;
+}
+export const NewestLikeDetailsForPostSchema = SchemaFactory.createForClass(
+  NewestLikeDetailsForPost,
 );
 
+export type ExtendedReactionForPostDocument =
+  HydratedDocument<ExtendedReaction>;
+@Schema()
+export class ExtendedReaction {
+  @Prop({ type: Number, required: true })
+  likesCount: number;
+
+  @Prop({ type: Number, required: true })
+  dislikesCount: number;
+
+  @Prop([{ type: NewestLikeDetailsForPost, required: true }])
+  newestLikes: NewestLikeDetailsForPost;
+}
 export const ExtendedReactionForPostSchema =
-  new mongoose.Schema<ExtendedReactionInfoViewModelForPost>({
-    likesCount: { type: Number, required: true },
-    dislikesCount: { type: Number, required: true },
-    newestLikes: [{ type: NewestLikeDetailsForPostSchema, required: true }],
-  });
-export const ExtendedReactionForPostModel = mongoose.model(
-  'ExtendedReactionForPostModel',
-  ExtendedReactionForPostSchema,
-);
+  SchemaFactory.createForClass(ExtendedReaction);
 
-export const PostSchema = new mongoose.Schema<PostsMongoDb>({
-  _id: { type: mongoose.Schema.Types.ObjectId, required: true },
-  title: {
-    type: String,
-    required: true,
-    minLength: titleValid.minLength,
-    maxLength: titleValid.maxLength,
-  },
-  shortDescription: {
-    type: String,
-    required: true,
-    minLength: shortDescriptionValid.minLength,
-    maxLength: shortDescriptionValid.maxLength,
-  },
-  content: {
-    type: String,
-    required: true,
-    minLength: contentValid.minLength,
-    maxLength: contentValid.maxLength,
-  },
-  blogId: { type: String, required: true },
-  blogName: {
-    type: String,
-    required: true,
-    minLength: blogNameValid.minLength,
-    maxLength: blogNameValid.maxLength,
-  },
-  createdAt: { type: String, required: true },
-  extendedLikesInfo: { type: ExtendedReactionForPostSchema, required: true },
-});
+export type PostDocument = HydratedDocument<PostsMongoDb>;
+@Schema()
+export class Post {
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId })
+  _id: mongoose.Schema.Types.ObjectId;
 
-export const PostModel = mongoose.model('posts', PostSchema);
+  @Prop({
+    type: String,
+    required: true,
+  })
+  title: string;
+  // minLength: titleValid.minLength,
+  // maxLength: titleValid.maxLength,
+
+  @Prop({ type: String, required: true })
+  shortDescription: string;
+
+  // minLength: shortDescriptionValid.minLength,
+  // maxLength: shortDescriptionValid.maxLength,
+  @Prop({ type: String, required: true })
+  content: string;
+
+  // minLength: contentValid.minLength,
+  // maxLength: contentValid.maxLength,
+  @Prop({ type: String, required: true })
+  blogId: string;
+
+  @Prop({ type: String, required: true })
+  blogName: string;
+
+  // minLength: blogNameValid.minLength,
+  // maxLength: blogNameValid.maxLength,
+  @Prop({ type: String, required: true })
+  createdAt: string;
+
+  @Prop({ type: ExtendedReaction, required: true })
+  extendedLikesInfo: ExtendedReaction;
+}
+
+export const PostSchema = SchemaFactory.createForClass(Post);

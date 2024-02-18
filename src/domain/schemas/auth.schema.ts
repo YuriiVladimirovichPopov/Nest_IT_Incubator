@@ -1,10 +1,18 @@
-import mongoose from 'mongoose';
-import { AuthViewModel } from '../../models/auth';
+import { HydratedDocument } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-export const AuthSchema = new mongoose.Schema<AuthViewModel>({
-  email: { type: String, required: true },
-  login: { type: String, required: true },
-  userId: { type: String, required: true },
-});
+export type AuthDocument = HydratedDocument<AuthUser>;
 
-export const AuthModel = mongoose.model('auth', AuthSchema);
+@Schema()
+export class AuthUser {
+  @Prop({ required: true, type: String })
+  email: string;
+
+  @Prop({ required: true, type: String })
+  login: string;
+
+  @Prop({ required: true, type: String })
+  userId: string;
+}
+
+export const AuthSchema = SchemaFactory.createForClass(AuthUser);

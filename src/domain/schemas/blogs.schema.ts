@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import { BlogsMongoDbType } from '../../types';
+import mongoose, { HydratedDocument } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export const nameValid = {
   minLength: 1,
@@ -10,23 +10,32 @@ export const descriptionValid = {
   maxLength: 500,
 };
 
-export const BlogSchema = new mongoose.Schema<BlogsMongoDbType>({
-  _id: { type: mongoose.Schema.Types.ObjectId, required: true },
-  name: {
-    type: String,
-    required: true,
-    minLength: nameValid.minLength,
-    maxLength: nameValid.maxLength,
-  },
-  description: {
-    type: String,
-    required: true,
-    minLength: descriptionValid.minLength,
-    maxLength: descriptionValid.maxLength,
-  },
-  websiteUrl: { type: String, required: true },
-  createdAt: { type: String, required: true },
-  isMembership: { type: Boolean, required: true },
-});
+export type BlogDocument = HydratedDocument<Blog>;
+// TODO: Было BlogsMongoDbType. надо ли удалять все монгошные классы? Нужны ли они?
 
-export const BlogModel = mongoose.model('blogs', BlogSchema);
+@Schema()
+export class Blog {
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId })
+  _id: mongoose.Schema.Types.ObjectId;
+
+  @Prop({ required: true, type: String })
+  name: string;
+  // minLength: nameValid.minLength,
+  // maxLength: nameValid.maxLength,
+
+  @Prop({ required: true, type: String })
+  description: string;
+  // minLength: descriptionValid.minLength,
+  // maxLength: descriptionValid.maxLength,
+
+  @Prop({ required: true, type: String })
+  websiteUrl: string;
+
+  @Prop({ required: true, type: String })
+  createdAt: string;
+
+  @Prop({ required: true, type: Boolean })
+  isMembership: boolean;
+}
+
+export const BlogSchema = SchemaFactory.createForClass(Blog);

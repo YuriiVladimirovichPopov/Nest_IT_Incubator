@@ -4,7 +4,14 @@ import { UserViewModel } from '../models/users/userViewModel';
 import { UsersRepository } from '../repositories/users-repository';
 import { httpStatuses } from 'src/send-status';
 import { RequestWithParams } from '../types';
-import { Body, Controller, Delete, Get, Post, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from 'src/application/auth-service';
 import { Paginated, PaginatedType, getUsersPagination } from 'src/pagination';
 import { UserInputModel } from 'src/models/users/userInputModel';
