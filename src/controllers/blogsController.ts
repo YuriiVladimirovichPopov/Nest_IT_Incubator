@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import { Response, Request } from 'express';
 import { BlogService } from '../application/blog-service';
 import { BlogInputModel } from '../models/blogs/blogsInputModel';
@@ -6,12 +5,11 @@ import { BlogViewModel } from '../models/blogs/blogsViewModel';
 import { getByIdParam } from '../models/getById';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
-
 import { httpStatuses } from 'src/send-status';
-import { RequestWithBody } from '../types';
 import { PostsRepository } from '../repositories/posts-repository';
 import { UserViewModel } from '../models/users/userViewModel';
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -40,7 +38,7 @@ export class BlogsController {
 
   @Post('blogs')
   async createBlogs(
-    req: RequestWithBody<BlogViewModel>,
+    @Body() blog: BlogInputModel,
     res: Response<BlogViewModel>,
   ) {
     const newBlog = await this.blogService.createBlog(req.body);
@@ -131,4 +129,30 @@ export class BlogsController {
     }
     return httpStatuses.NO_CONTENT_204;
   }
+}
+
+import { IsNotEmpty, IsString, IsUrl, Length, Matches } from 'class-validator';
+
+export class BlogCreateModel {
+  @IsString()
+  @Length(2, 15)
+  @IsNotEmpty()
+  @Matches(/.*\S+.*/, {
+    message: 'name should not consist of whitespace characters',
+  })
+  name: string;
+
+  @IsString()
+  @Length(2, 500)
+  @IsNotEmpty()
+  @Matches(/.*\S+.*/, {
+    message: 'description should not consist of whitespace characters',
+  })
+  description: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsUrl()
+  @Length(5, 100)
+  websiteUrl: string;
 }

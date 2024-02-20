@@ -18,10 +18,13 @@ export class Blog {
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId })
   _id: mongoose.Schema.Types.ObjectId;
 
-  @Prop({ required: true, type: String })
+  @Prop({
+    required: true,
+    type: String,
+    minLength: nameValid.minLength,
+    maxLength: nameValid.maxLength,
+  })
   name: string;
-  // minLength: nameValid.minLength,
-  // maxLength: nameValid.maxLength,
 
   @Prop({ required: true, type: String })
   description: string;

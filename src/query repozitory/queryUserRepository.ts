@@ -23,6 +23,7 @@ export class QueryUserRepository {
       {
         projection: {
           passwordHash: 0,
+          passwordSalt: 0,
           emailConfirmation: 0,
           refreshTokenBlackList: 0,
         },

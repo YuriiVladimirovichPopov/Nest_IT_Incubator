@@ -53,6 +53,9 @@ export class User {
   @Prop({ required: true, type: String })
   passwordHash: string;
 
+  @Prop({ required: true, type: String })
+  passwordSalt: string;
+
   @Prop({ required: true, type: AccountDataSchema })
   emailConfirmation: EmailConfirmation;
 

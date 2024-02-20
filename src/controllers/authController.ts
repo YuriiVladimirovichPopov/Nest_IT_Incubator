@@ -4,7 +4,7 @@ import { ObjectId } from 'bson';
 import { error } from 'console';
 import { emailAdapter } from '../adapters/email-adapter';
 import { AuthService } from '../application/auth-service';
-//import { jwtService } from '../application/jwt-service';
+import { jwtService } from '../application/jwt-service';
 import { emailManager } from '../managers/email-manager';
 import { CodeType } from '../models/code';
 import { UserInputModel } from '../models/users/userInputModel';

@@ -40,7 +40,7 @@ export class UsersRepository {
     }
 
     const result: UsersMongoDbType[] = await UserModel.find(filter, {
-      projection: { passwordHash: 0 },
+      projection: { passwordHash: 0, passwordSalt: 0 },
     })
 
       .sort({ [pagination.sortBy]: pagination.sortDirection })

@@ -85,6 +85,7 @@ export class UsersMongoDbType {
     public email: string,
     public createdAt: string,
     public passwordHash: string,
+    public passwordSalt: string,
     public emailConfirmation: EmailConfirmationType,
     public recoveryCode?: string,
   ) {}

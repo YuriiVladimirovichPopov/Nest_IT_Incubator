@@ -1,4 +1,4 @@
-//import add from 'date-fns/add';
+import { add } from 'date-fns';
 import { randomUUID } from 'crypto';
 import { ObjectId } from 'mongodb';
 import { DeviceMongoDbType, UsersMongoDbType } from '../types';
@@ -10,7 +10,9 @@ import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { Request } from 'express';
 import { Injectable } from '@nestjs/common';
 import { emailManager } from 'src/managers/email-manager';
-//import Jwt from 'jsonwebtoken';
+import Jwt from 'jsonwebtoken';
+import { settings } from 'src/main';
+import bcrypt from 'bcrypt';
 //import { emailManager } from '../adapters/email-manager';
 
 @Injectable()
@@ -25,13 +27,15 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<UserCreateViewModel | null> {
-    const passwordHash = await this._generateHash(password);
+    const passwordSalt = await bcrypt.genSalt(10);
+    const passwordHash = await this._generateHash(password, passwordSalt);
 
     const newUser: UsersMongoDbType = {
       _id: new ObjectId(),
       login,
       email,
       passwordHash,
+      passwordSalt,
       createdAt: new Date().toISOString(),
       emailConfirmation: {
         confirmationCode: randomUUID(),
@@ -58,7 +62,7 @@ export class AuthService {
 
     if (!user) return false;
 
-    const passwordHash = await this._generateHash(password);
+    const passwordHash = await this._generateHash(password, user.passwordSalt);
     if (user.passwordHash !== passwordHash) {
       return false;
     }
@@ -75,8 +79,8 @@ export class AuthService {
     }
   }
 
-  async _generateHash(password: string) {
-    const hash = await crypto.hash(password);
+  async _generateHash(password: string, salt: string) {
+    const hash = bcrypt.hash(password, salt);
     return hash;
   }
 
@@ -192,13 +196,18 @@ export class AuthService {
     newPassword: string,
   ): Promise<any> {
     // TODO: any don't like. need to change this Promise
-    const newHashedPassword = await this._generateHash(newPassword);
+    const newPasswordSalt = await bcrypt.genSalt(10);
+    const newHashedPassword = await this._generateHash(
+      newPassword,
+      newPasswordSalt,
+    );
 
     await UserModel.updateOne(
       { _id: _id },
       {
         $set: {
           passwordHash: newHashedPassword,
+          passwordSalt: newPasswordSalt,
           recoveryCode: null,
         },
       },
