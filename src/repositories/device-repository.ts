@@ -1,13 +1,21 @@
 import { DeviceMongoDbType } from '../types';
-import { DeviceModel } from '../domain/schemas/device.schema';
+import { Device, DeviceDocument } from '../domain/schemas/device.schema';
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class DeviceRepository {
+  constructor(
+    @InjectModel(Device.name)
+    private readonly DeviceModel: Model<DeviceDocument>,
+  ) {}
   async findDeviceByUser(deviceId: string): Promise<DeviceMongoDbType | null> {
     try {
-      const device = await DeviceModel.findOne({ deviceId });
-      return device;
+      const device: DeviceDocument | null = await this.DeviceModel.findOne({
+        deviceId,
+      });
+      return device.toObject();
     } catch (error) {
       console.error('Error finding device by ID:', error);
       return null;
@@ -15,17 +23,22 @@ export class DeviceRepository {
   }
 
   async findValidDevice(deviceId: string): Promise<DeviceMongoDbType | null> {
-    const device = await DeviceModel.findOne({ deviceId: deviceId });
-    return device;
+    const device: DeviceDocument | null = await this.DeviceModel.findOne({
+      deviceId: deviceId,
+    });
+    return device.toObject();
   }
 
   async getAllDevicesByUser(userId: string): Promise<DeviceMongoDbType[]> {
     try {
-      const devices = await DeviceModel.find(
+      const devices: DeviceDocument[] | null = await this.DeviceModel.find(
         { userId },
         { projection: { _id: 0, userId: 0 } },
       ).lean();
-      return devices;
+      return devices.map((device) => ({
+        ...device,
+        _id: new Object(device._id), // Преобразуем _id к типу ObjectId
+      }));
     } catch (error) {
       console.error('Error getting devices by userId:', error);
       return [];
@@ -34,7 +47,7 @@ export class DeviceRepository {
 
   async deleteDeviceById(userId: string, deviceId: string): Promise<boolean> {
     try {
-      const result = await DeviceModel.deleteOne({ userId, deviceId });
+      const result = await this.DeviceModel.deleteOne({ userId, deviceId });
       if (result.deletedCount === 1) {
         return true;
       } else {
@@ -50,7 +63,10 @@ export class DeviceRepository {
     deviceId: string,
   ): Promise<boolean> {
     try {
-      await DeviceModel.deleteMany({ userId, deviceId: { $ne: deviceId } });
+      await this.DeviceModel.deleteMany({
+        userId,
+        deviceId: { $ne: deviceId },
+      });
       return true;
     } catch (error) {
       throw new Error('Failed to refresh tokens');
@@ -59,7 +75,7 @@ export class DeviceRepository {
 
   async deleteAllDevices(): Promise<boolean> {
     try {
-      const result = await DeviceModel.deleteMany({});
+      const result = await this.DeviceModel.deleteMany({});
       return result.acknowledged === true;
     } catch (error) {
       return false;

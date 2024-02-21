@@ -2,11 +2,17 @@ import { ObjectId } from 'mongodb';
 import { BlogInputModel } from '../models/blogs/blogsInputModel';
 import { BlogsMongoDbType } from '../types';
 import { BlogViewModel } from '../models/blogs/blogsViewModel';
-import { BlogModel } from '../domain/schemas/blogs.schema';
+import { Blog, BlogDocument } from '../domain/schemas/blogs.schema';
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class BlogsRepository {
+  constructor(
+    @InjectModel(Blog.name)
+    private readonly BlogModel: Model<BlogDocument>,
+  ) {}
   _blogMapper(blog: BlogsMongoDbType): BlogViewModel {
     return {
       id: blog._id.toString(),
@@ -19,7 +25,7 @@ export class BlogsRepository {
   }
 
   async createBlog(newBlog: BlogsMongoDbType): Promise<BlogViewModel> {
-    const blog = new BlogModel(newBlog);
+    const blog = new this.BlogModel(newBlog);
     await blog.save();
     return this._blogMapper(newBlog);
   }
@@ -29,7 +35,7 @@ export class BlogsRepository {
       return false;
     }
     const _id = new ObjectId(id);
-    const foundBlogById = await BlogModel.updateOne(
+    const foundBlogById = await this.BlogModel.updateOne(
       { _id },
       { $set: { ...data } },
     );
@@ -41,14 +47,14 @@ export class BlogsRepository {
       return false;
     }
     const _id = new ObjectId(id);
-    const foundBlogById = await BlogModel.deleteOne({ _id });
+    const foundBlogById = await this.BlogModel.deleteOne({ _id });
 
     return foundBlogById.deletedCount === 1;
   }
 
   async deleteAllBlogs(): Promise<boolean> {
     try {
-      const result = await BlogModel.deleteMany({});
+      const result = await this.BlogModel.deleteMany({});
       return result.acknowledged === true;
     } catch (error) {
       return false;

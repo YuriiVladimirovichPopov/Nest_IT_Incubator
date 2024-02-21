@@ -1,12 +1,18 @@
 import { ObjectId } from 'mongodb';
-import { CommentModel } from '../domain/schemas/comments.schema';
+import { Comment, CommentDocument } from '../domain/schemas/comments.schema';
 import { CommentsMongoDbType } from '../types';
 import { ReactionStatusEnum } from '../domain/schemas/reactionInfo.schema';
 import { CommentViewModel } from '../models/comments/commentViewModel';
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class CommentsRepository {
+  constructor(
+    @InjectModel(Comment.name)
+    private readonly CommentModel: Model<CommentDocument>,
+  ) {}
   async createComment(
     parentId: string,
     postId: string,
@@ -26,7 +32,7 @@ export class CommentsRepository {
       },
     };
 
-    await CommentModel.create({ ...createCommentForPost });
+    await this.CommentModel.create({ ...createCommentForPost });
 
     return {
       id: createCommentForPost._id.toString(),
@@ -45,9 +51,9 @@ export class CommentsRepository {
     content: string,
   ): Promise<CommentsMongoDbType | undefined | boolean> {
     const filter = { _id: new ObjectId(commentId) };
-    const foundComment = await CommentModel.findOne(filter);
+    const foundComment = await this.CommentModel.findOne(filter);
     if (foundComment) {
-      const result = await CommentModel.updateOne(filter, {
+      const result = await this.CommentModel.updateOne(filter, {
         $set: { content: content },
       });
       return result.matchedCount === 1;
@@ -55,14 +61,14 @@ export class CommentsRepository {
   }
 
   async deleteComment(commentId: string) {
-    const result = await CommentModel.deleteOne({
+    const result = await this.CommentModel.deleteOne({
       _id: new ObjectId(commentId),
     });
     return result.deletedCount === 1;
   }
 
   async deleteAllComment(): Promise<boolean> {
-    const result = await CommentModel.deleteMany({});
+    const result = await this.CommentModel.deleteMany({});
     return result.acknowledged === true;
   }
 }

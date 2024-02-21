@@ -3,12 +3,17 @@ import { BlogsMongoDbType } from '../types';
 import { BlogViewModel } from '../models/blogs/blogsViewModel';
 import { PaginatedType } from 'src/pagination';
 import { Paginated } from 'src/pagination';
-import { BlogModel } from '../domain/schemas/blogs.schema';
-import { isValidObjectId } from 'mongoose';
+import { Blog, BlogDocument } from '../domain/schemas/blogs.schema';
+import { Model, isValidObjectId } from 'mongoose';
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class QueryBlogsRepository {
+  constructor(
+    @InjectModel(Blog.name)
+    private readonly BlogModel: Model<BlogDocument>,
+  ) {}
   _blogMapper(blog: BlogsMongoDbType): BlogViewModel {
     return {
       id: blog._id.toString(),
@@ -29,14 +34,14 @@ export class QueryBlogsRepository {
         name: { $regex: pagination.searchNameTerm || '', $options: 'i' },
       };
     }
-    const result: WithId<BlogsMongoDbType>[] = await BlogModel.find(filter)
+    const result: WithId<BlogsMongoDbType>[] = await this.BlogModel.find(filter)
 
       .sort({ [pagination.sortBy]: pagination.sortDirection })
       .skip(pagination.skip)
       .limit(pagination.pageSize)
       .lean();
 
-    const totalCount: number = await BlogModel.countDocuments(filter);
+    const totalCount: number = await this.BlogModel.countDocuments(filter);
     const pageCount: number = Math.ceil(totalCount / pagination.pageSize);
 
     const res: Paginated<BlogViewModel> = {
@@ -51,10 +56,12 @@ export class QueryBlogsRepository {
 
   async findBlogById(id: string): Promise<BlogViewModel | null> {
     if (!isValidObjectId(id)) return null;
-    const blogById = await BlogModel.findOne({ _id: new ObjectId(id) });
+    const blogById = await this.BlogModel.findOne({
+      _id: new ObjectId(id),
+    });
     if (!blogById) {
       return null;
     }
-    return this._blogMapper(blogById);
+    return this._blogMapper(blogById.toObject()); // TODO: add .toObject() method
   }
 }

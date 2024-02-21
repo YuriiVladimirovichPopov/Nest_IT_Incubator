@@ -14,6 +14,12 @@ import { PostsService } from './application/post-service';
 import { AuthService } from './application/auth-service';
 import { BlogService } from './application/blog-service';
 import { CommentsService } from './application/comment-service';
+import { BlogsRepository } from './repositories/blogs-repository';
+import { CommentsRepository } from './repositories/comments-repository';
+import { DeviceRepository } from './repositories/device-repository';
+import { PostsRepository } from './repositories/posts-repository';
+import { ReactionsRepository } from './repositories/reaction-repository';
+import { UsersRepository } from './repositories/users-repository';
 
 @Module({
   imports: [MongooseModule.forRoot('mongodb://localhost/nest')], //тут меняем для монгус 13 видео
@@ -34,6 +40,13 @@ import { CommentsService } from './application/comment-service';
     //JWTService,
     PostsService,
     ReactionsService,
+    //repositories
+    BlogsRepository,
+    CommentsRepository,
+    DeviceRepository,
+    PostsRepository,
+    ReactionsRepository,
+    UsersRepository,
   ],
 })
 export class AppModule {}

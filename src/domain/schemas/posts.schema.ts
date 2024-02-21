@@ -64,29 +64,38 @@ export class Post {
   @Prop({
     type: String,
     required: true,
+    minLength: titleValid.minLength,
+    maxLength: titleValid.maxLength,
   })
   title: string;
-  // minLength: titleValid.minLength,
-  // maxLength: titleValid.maxLength,
 
-  @Prop({ type: String, required: true })
+  @Prop({
+    type: String,
+    required: true,
+    minLength: shortDescriptionValid.minLength,
+    maxLength: shortDescriptionValid.maxLength,
+  })
   shortDescription: string;
 
-  // minLength: shortDescriptionValid.minLength,
-  // maxLength: shortDescriptionValid.maxLength,
-  @Prop({ type: String, required: true })
+  @Prop({
+    type: String,
+    required: true,
+    minLength: contentValid.minLength,
+    maxLength: contentValid.maxLength,
+  })
   content: string;
 
-  // minLength: contentValid.minLength,
-  // maxLength: contentValid.maxLength,
   @Prop({ type: String, required: true })
   blogId: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({
+    type: String,
+    required: true,
+    minLength: blogNameValid.minLength,
+    maxLength: blogNameValid.maxLength,
+  })
   blogName: string;
 
-  // minLength: blogNameValid.minLength,
-  // maxLength: blogNameValid.maxLength,
   @Prop({ type: String, required: true })
   createdAt: string;
 

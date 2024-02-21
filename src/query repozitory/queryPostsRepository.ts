@@ -2,21 +2,29 @@ import { CommentsMongoDbType, PostsMongoDb } from '../types';
 import { PaginatedType } from 'src/pagination';
 import { ObjectId, WithId } from 'mongodb';
 import { PostsViewModel } from '../models/posts/postsViewModel';
-import { CommentModel } from '../domain/schemas/comments.schema';
+import { Comment, CommentDocument } from '../domain/schemas/comments.schema';
 import {
   ExtendedReactionForPostModel,
-  PostModel,
+  PostDocument,
 } from '../domain/schemas/posts.schema';
 
 import {
-  ReactionModel,
+  ReactionDocument,
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Post } from '@nestjs/common';
 import { Paginated } from 'src/pagination';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class QueryPostRepository {
+  constructor(
+    @InjectModel(Post.name, Comment.name)
+    private readonly PostModel: Model<PostDocument>,
+    private readonly CommentModel: Model<CommentDocument>,
+    private readonly ReactionModel: Model<ReactionDocument>,
+  ) {}
   _postMapper(
     post: PostsMongoDb,
     myStatus: ReactionStatusEnum,
@@ -61,13 +69,13 @@ export class QueryPostRepository {
     userId?: string,
   ): Promise<Paginated<PostsViewModel>> {
     try {
-      const result: WithId<PostsMongoDb>[] = await PostModel.find(filter)
+      const result: WithId<PostsMongoDb>[] = await this.PostModel.find(filter)
         .sort({ [pagination.sortBy]: pagination.sortDirection })
         .skip(pagination.skip)
         .limit(pagination.pageSize)
         .lean();
 
-      const totalCount: number = await PostModel.countDocuments(filter);
+      const totalCount: number = await this.PostModel.countDocuments(filter);
       const pageCount: number = Math.ceil(totalCount / pagination.pageSize);
 
       const items: PostsViewModel[] = [];
@@ -75,7 +83,7 @@ export class QueryPostRepository {
         let myStatus: ReactionStatusEnum = ReactionStatusEnum.None;
 
         if (userId) {
-          const reaction = await ReactionModel.findOne({
+          const reaction = await this.ReactionModel.findOne({
             userId: userId.toString(),
             parentId: post._id.toString(),
           });
@@ -109,7 +117,7 @@ export class QueryPostRepository {
     }
 
     const _id = new ObjectId(id);
-    const findPost = await PostModel.findOne({ _id: _id });
+    const findPost = await this.PostModel.findOne({ _id: _id });
 
     if (!findPost) {
       return null;
@@ -118,7 +126,7 @@ export class QueryPostRepository {
     let myStatus: ReactionStatusEnum = ReactionStatusEnum.None;
 
     if (userId) {
-      const reaction = await ReactionModel.findOne({
+      const reaction = await this.ReactionModel.findOne({
         userId: userId.toString(),
         parentId: id,
       });
@@ -141,12 +149,12 @@ export class QueryPostRepository {
       name: { $regex: pagination.searchNameTerm, $options: 'i' },
     };
     const result: WithId<WithId<CommentsMongoDbType>>[] =
-      await CommentModel.find(filter)
+      await this.CommentModel.find(filter)
         .sort({ [pagination.sortBy]: pagination.sortDirection })
         .skip(pagination.skip)
         .limit(pagination.pageSize)
         .lean();
-    const totalCount: number = await CommentModel.countDocuments(filter);
+    const totalCount: number = await this.CommentModel.countDocuments(filter);
     const pageCount: number = Math.ceil(totalCount / pagination.pageSize);
 
     return {

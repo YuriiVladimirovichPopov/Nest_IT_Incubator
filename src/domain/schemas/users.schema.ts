@@ -39,10 +39,13 @@ export class User {
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId })
   _id: mongoose.Schema.Types.ObjectId;
 
-  @Prop({ required: true, type: String })
+  @Prop({
+    required: true,
+    type: String,
+    minLength: loginValid.minLength,
+    maxLength: loginValid.maxLength,
+  })
   login: string;
-  // minLength: loginValid.minLength,
-  // maxLength: loginValid.maxLength,
 
   @Prop({ required: true, type: String })
   email: string;
@@ -50,7 +53,12 @@ export class User {
   @Prop({ required: true, type: String })
   createdAt: string;
 
-  @Prop({ required: true, type: String })
+  @Prop({
+    required: true,
+    type: String,
+    minLength: passwordValid.minLength,
+    maxLength: passwordValid.maxLength,
+  })
   passwordHash: string;
 
   @Prop({ required: true, type: String })

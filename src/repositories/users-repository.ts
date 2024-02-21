@@ -4,13 +4,19 @@ import { UserPagination } from 'src/pagination';
 import { UserViewModel } from '../models/users/userViewModel';
 import { Paginated } from 'src/pagination';
 import { UserCreateViewModel } from '../models/users/createUser';
-import { UserModel } from '../domain/schemas/users.schema';
+import { User, UserDocument } from '../domain/schemas/users.schema';
 import { randomUUID } from 'crypto';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class UsersRepository {
+  constructor(
+    @InjectModel(User.name)
+    private readonly UserModel: Model<UserDocument>,
+  ) {}
   _userMapper(user: UsersMongoDbType) {
     return {
       id: user._id.toString(),
@@ -39,7 +45,7 @@ export class UsersRepository {
       filter = { login: { $regex: pagination.searchLoginTerm, $options: 'i' } };
     }
 
-    const result: UsersMongoDbType[] = await UserModel.find(filter, {
+    const result: UsersMongoDbType[] = await this.UserModel.find(filter, {
       projection: { passwordHash: 0, passwordSalt: 0 },
     })
 
@@ -48,7 +54,7 @@ export class UsersRepository {
       .limit(pagination.pageSize)
       .lean();
 
-    const totalCount: number = await UserModel.countDocuments(filter);
+    const totalCount: number = await this.UserModel.countDocuments(filter);
     const pageCount: number = Math.ceil(totalCount / pagination.pageSize);
 
     const res: Paginated<UserViewModel> = {
@@ -62,26 +68,26 @@ export class UsersRepository {
   }
 
   async findByLoginOrEmail(loginOrEmail: string) {
-    const user = await UserModel.findOne({
+    const user = await this.UserModel.findOne({
       $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
     });
     return user;
   }
 
   async findUserByEmail(email: string): Promise<UsersMongoDbType | null> {
-    const user = await UserModel.findOne({ email: email });
-    return user;
+    const user = await this.UserModel.findOne({ email: email });
+    return user.toObject();
   }
 
   async findUserByConfirmationCode(emailConfirmationCode: string) {
-    const user = await UserModel.findOne({
+    const user = await this.UserModel.findOne({
       'emailConfirmation.confirmationCode': emailConfirmationCode,
     });
     return user;
   }
 
   async createUser(newUser: UsersMongoDbType): Promise<UserCreateViewModel> {
-    await UserModel.insertMany(newUser);
+    await this.UserModel.insertMany(newUser);
     return {
       id: newUser._id.toString(),
       login: newUser.login,
@@ -91,12 +97,14 @@ export class UsersRepository {
   }
 
   async deleteUserById(id: string): Promise<PostsViewModel | boolean> {
-    const deletedUser = await UserModel.deleteOne({ _id: new ObjectId(id) });
+    const deletedUser = await this.UserModel.deleteOne({
+      _id: new ObjectId(id),
+    });
     return deletedUser.deletedCount === 1;
   }
   async deleteAllUsers(): Promise<boolean> {
     try {
-      const result = await UserModel.deleteMany({});
+      const result = await this.UserModel.deleteMany({});
       return result.acknowledged === true;
     } catch (error) {
       return false;
@@ -106,14 +114,14 @@ export class UsersRepository {
   async findUserByRecoryCode(
     recoveryCode: string,
   ): Promise<UsersMongoDbType | null> {
-    const user = await UserModel.findOne({ recoveryCode });
-    return user;
+    const user = await this.UserModel.findOne({ recoveryCode });
+    return user.toObject();
   }
 
   async sendRecoveryMessage(user: UsersMongoDbType): Promise<UsersMongoDbType> {
     const recoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
     const updatedUser: UsersMongoDbType | null =
-      await UserModel.findByIdAndUpdate(
+      await this.UserModel.findByIdAndUpdate(
         { _id: user._id },
         { $set: { recoveryCode } },
       );

@@ -3,30 +3,36 @@ import { PaginatedType } from 'src/pagination';
 import { Paginated } from 'src/pagination';
 import { CommentsMongoDbType } from '../types';
 import { CommentViewModel } from '../models/comments/commentViewModel';
-import { CommentModel } from '../domain/schemas/comments.schema';
+import { Comment, CommentDocument } from '../domain/schemas/comments.schema';
 import {
-  ReactionModel,
+  ReactionDocument,
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class CommentsQueryRepository {
-  constructor() {}
+  constructor(
+    @InjectModel(Comment.name)
+    private readonly CommentModel: Model<CommentDocument>,
+    private readonly ReactionModel: Model<ReactionDocument>,
+  ) {}
 
   async getAllCommentsForPost(
     postId: string,
     pagination: PaginatedType,
     userId?: string,
   ): Promise<Paginated<CommentViewModel>> {
-    const result = await CommentModel.find({ postId: postId })
+    const result = await this.CommentModel.find({ postId: postId })
       .sort({ [pagination.sortBy]: pagination.sortDirection })
       .skip(pagination.skip)
       .limit(pagination.pageSize)
       .lean();
 
     // Получаем все реакции текущего пользователя на комментарии этого поста
-    const userReactions = await ReactionModel.find({
+    const userReactions = await this.ReactionModel.find({
       parentId: { $in: result.map((comment) => comment._id) },
       userId,
     });
@@ -39,7 +45,7 @@ export class CommentsQueryRepository {
     );
 
     const mappedComments: CommentViewModel[] = result.map(
-      (el: CommentsMongoDbType): CommentViewModel => ({
+      (el: Comment): CommentViewModel => ({
         id: el._id.toString(),
         content: el.content,
         commentatorInfo: el.commentatorInfo,
@@ -53,7 +59,9 @@ export class CommentsQueryRepository {
       }),
     );
 
-    const totalCount: number = await CommentModel.countDocuments({ postId });
+    const totalCount: number = await this.CommentModel.countDocuments({
+      postId,
+    });
     const pageCount: number = Math.ceil(totalCount / pagination.pageSize);
 
     const response: Paginated<CommentViewModel> = {
@@ -77,16 +85,18 @@ export class CommentsQueryRepository {
     id: string,
     userId?: string,
   ): Promise<CommentViewModel | null> {
-    const comment: CommentsMongoDbType | null = await CommentModel.findOne({
-      _id: new ObjectId(id),
-    }).exec();
+    const comment: CommentsMongoDbType | null = await this.CommentModel.findOne(
+      {
+        _id: new ObjectId(id),
+      },
+    ).exec();
 
     if (!comment) return null;
 
     let myStatus: ReactionStatusEnum = ReactionStatusEnum.None;
 
     if (userId) {
-      const reaction = await ReactionModel.findOne({
+      const reaction = await this.ReactionModel.findOne({
         userId: userId.toString(),
         parentId: id,
       });
@@ -112,7 +122,9 @@ export class CommentsQueryRepository {
     pagination: PaginatedType,
     userId: string,
   ): Promise<Paginated<CommentViewModel>> {
-    const result = await CommentModel.find({ parentId: new ObjectId(parentId) })
+    const result = await this.CommentModel.find({
+      parentId: new ObjectId(parentId),
+    })
       .sort({
         [pagination.sortBy]: pagination.sortDirection === 'asc' ? 1 : -1,
       })
@@ -121,7 +133,7 @@ export class CommentsQueryRepository {
       .lean();
 
     // Получаем все реакции текущего пользователя на комментарии
-    const userReactions = await ReactionModel.find({
+    const userReactions = await this.ReactionModel.find({
       parentId: { $in: result.map((comment) => comment._id) },
       userId,
     });
@@ -134,7 +146,7 @@ export class CommentsQueryRepository {
     );
 
     const mappedComments: CommentViewModel[] = result.map(
-      (comment: CommentsMongoDbType): CommentViewModel => ({
+      (comment: Comment): CommentViewModel => ({
         id: comment._id.toString(),
         content: comment.content,
         commentatorInfo: comment.commentatorInfo,
@@ -149,7 +161,7 @@ export class CommentsQueryRepository {
       }),
     );
 
-    const totalCount: number = await CommentModel.countDocuments({
+    const totalCount: number = await this.CommentModel.countDocuments({
       parentId: new ObjectId(parentId),
     });
     const pageCount: number = Math.ceil(totalCount / pagination.pageSize);

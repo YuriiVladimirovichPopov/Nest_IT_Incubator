@@ -26,10 +26,13 @@ export class Blog {
   })
   name: string;
 
-  @Prop({ required: true, type: String })
+  @Prop({
+    required: true,
+    type: String,
+    minLength: descriptionValid.minLength,
+    maxLength: descriptionValid.maxLength,
+  })
   description: string;
-  // minLength: descriptionValid.minLength,
-  // maxLength: descriptionValid.maxLength,
 
   @Prop({ required: true, type: String })
   websiteUrl: string;

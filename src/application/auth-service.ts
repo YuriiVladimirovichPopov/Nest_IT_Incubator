@@ -2,9 +2,9 @@ import { add } from 'date-fns';
 import { randomUUID } from 'crypto';
 import { ObjectId } from 'mongodb';
 import { DeviceMongoDbType, UsersMongoDbType } from '../types';
-import { UserModel } from '../domain/schemas/users.schema';
+import { User, UserDocument } from '../domain/schemas/users.schema';
 import { UserCreateViewModel } from '../models/users/createUser';
-import { DeviceModel } from '../domain/schemas/device.schema';
+import { Device, DeviceDocument } from '../domain/schemas/device.schema';
 import { UsersRepository } from '../repositories/users-repository';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { Request } from 'express';
@@ -13,13 +13,18 @@ import { emailManager } from 'src/managers/email-manager';
 import Jwt from 'jsonwebtoken';
 import { settings } from 'src/main';
 import bcrypt from 'bcrypt';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 //import { emailManager } from '../adapters/email-manager';
 
 @Injectable()
 export class AuthService {
   constructor(
-    protected usersRepository: UsersRepository,
-    protected queryUserRepository: QueryUserRepository,
+    @InjectModel(User.name, Device.name)
+    private readonly UserModel: Model<UserDocument>,
+    private readonly DeviceModel: Model<DeviceDocument>,
+    private readonly usersRepository: UsersRepository,
+    private readonly queryUserRepository: QueryUserRepository,
   ) {}
 
   async createUser(
@@ -85,7 +90,7 @@ export class AuthService {
   }
 
   async updateConfirmEmailByUser(userId: string): Promise<boolean> {
-    const foundUserByEmail = await UserModel.updateOne(
+    const foundUserByEmail = await this.UserModel.updateOne(
       { _id: new ObjectId(userId) },
       { $set: { 'emailConfirmation.isConfirmed': true } },
     );
@@ -103,7 +108,7 @@ export class AuthService {
   }
 
   async findTokenInBlackList(userId: string, token: string): Promise<boolean> {
-    const userByToken = await UserModel.findOne({
+    const userByToken = await this.UserModel.findOne({
       _id: new ObjectId(userId),
       refreshTokenBlackList: { $in: [token] },
     });
@@ -138,14 +143,14 @@ export class AuthService {
   async updateAndFindUserForEmailSend(
     userId: ObjectId,
   ): Promise<UsersMongoDbType | null> {
-    const user = await UserModel.findOne({ _id: userId });
+    const user = await this.UserModel.findOne({ _id: userId });
 
     if (user) {
       if (!user.emailConfirmation!.isConfirmed) {
         const confirmationCode = randomUUID();
         const expirationDate = add(new Date(), { minutes: 60 });
 
-        await UserModel.updateOne(
+        await this.UserModel.updateOne(
           { _id: userId },
           {
             $set: {
@@ -158,9 +163,9 @@ export class AuthService {
           },
         );
 
-        const updatedUser = await UserModel.findOne({ _id: userId });
+        const updatedUser = await this.UserModel.findOne({ _id: userId });
 
-        return updatedUser || null;
+        return updatedUser.toObject() || null;
       }
     }
     return null;
@@ -170,7 +175,7 @@ export class AuthService {
     deviceId: string,
     newLastActiveDate: string,
   ): Promise<boolean> {
-    const refTokenByDeviceId = await DeviceModel.updateOne(
+    const refTokenByDeviceId = await this.DeviceModel.updateOne(
       { deviceId: deviceId },
       { $set: { lastActiveDate: newLastActiveDate } },
     );
@@ -180,11 +185,11 @@ export class AuthService {
   async addNewDevice(
     device: DeviceMongoDbType,
   ): Promise<DeviceMongoDbType | null> {
-    const newDevice = new DeviceModel(device);
+    const newDevice = new this.DeviceModel(device);
 
     try {
       await newDevice.save();
-      return newDevice;
+      return newDevice.toObject();
     } catch (error) {
       console.error('Error saving new device:', error);
       return null;
@@ -202,7 +207,7 @@ export class AuthService {
       newPasswordSalt,
     );
 
-    await UserModel.updateOne(
+    await this.UserModel.updateOne(
       { _id: _id },
       {
         $set: {

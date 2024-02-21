@@ -2,27 +2,34 @@ import { PostsMongoDb } from '../types';
 import { ObjectId } from 'mongodb';
 import { PostsInputModel } from '../models/posts/postsInputModel';
 import { PostsViewModel } from '../models/posts/postsViewModel';
-import { PostModel } from '../domain/schemas/posts.schema';
+import { PostDocument } from '../domain/schemas/posts.schema';
 import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
 import { ExtendedReactionInfoViewModelForPost } from '../models/reaction/reactionInfoViewModel';
-import { ExtendedReactionForPostModel } from '../domain/schemas/posts.schema';
+import { ExtendedReactionForPostDocument } from '../domain/schemas/posts.schema';
 import {
-  ReactionModel,
+  Reaction,
+  ReactionDocument,
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
 import { UserViewModel } from '../models/users/userViewModel';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Post } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class PostsRepository {
   private queryBlogsRepository: QueryBlogsRepository;
-  constructor() {
+  constructor(
+    @InjectModel(Post.name, Reaction.name)
+    private readonly PostModel: Model<PostDocument>,
+    private readonly ReactionModel: Model<ReactionDocument>,
+  ) {
     this.queryBlogsRepository = new QueryBlogsRepository();
   }
 
   private postMapper(
     post: PostsMongoDb,
-    postReaction: ExtendedReactionInfoViewModelForPost,
+    postReaction: ExtendedReactionForPostDocument,
   ): PostsViewModel {
     if (!postReaction) {
       postReaction = {
@@ -73,7 +80,7 @@ export class PostsRepository {
     };
 
     try {
-      const createdPost = await PostModel.create(createPostForBlog);
+      const createdPost = await this.PostModel.create(createPostForBlog);
       const reaction: ExtendedReactionInfoViewModelForPost =
         await ExtendedReactionForPostModel.create({
           postId: createdPost._id,
@@ -118,7 +125,7 @@ export class PostsRepository {
       };
 
       // Создаем новый пост
-      const createdPost = await PostModel.create(createPostForBlog);
+      const createdPost = await this.PostModel.create(createPostForBlog);
 
       // Создаем реакции для нового поста
       const reaction: ExtendedReactionInfoViewModelForPost =
@@ -143,7 +150,7 @@ export class PostsRepository {
     id: string,
     data: PostsInputModel,
   ): Promise<PostsViewModel | boolean> {
-    const foundPostById = await PostModel.updateOne(
+    const foundPostById = await this.PostModel.updateOne(
       { _id: new ObjectId(id) },
       { $set: { ...data } },
     );
@@ -152,18 +159,18 @@ export class PostsRepository {
 
   async updatePostLikesInfo(post: PostsViewModel) {
     const [likesCount, dislikesCount] = await Promise.all([
-      ReactionModel.countDocuments({
+      this.ReactionModel.countDocuments({
         parentId: post.id.toString(),
         myStatus: ReactionStatusEnum.Like,
       }),
-      ReactionModel.countDocuments({
+      this.ReactionModel.countDocuments({
         parentId: post.id.toString(),
         myStatus: ReactionStatusEnum.Dislike,
       }),
     ]);
 
     // Получаем информацию о 3-х последних лайках
-    const newestLikes = await ReactionModel.find({
+    const newestLikes = await this.ReactionModel.find({
       parentId: post.id.toString(),
       myStatus: ReactionStatusEnum.Like,
     })
@@ -187,20 +194,22 @@ export class PostsRepository {
     };
 
     // Обновляем поле extendedLikesInfo в документе PostModel
-    await PostModel.findByIdAndUpdate(post.id.toString(), {
+    await this.PostModel.findByIdAndUpdate(post.id.toString(), {
       extendedLikesInfo: updatedExtendedReaction,
     });
   }
 
   async deletePost(id: string): Promise<PostsViewModel | boolean> {
-    const foundPostById = await PostModel.deleteOne({ _id: new ObjectId(id) });
+    const foundPostById = await this.PostModel.deleteOne({
+      _id: new ObjectId(id),
+    });
 
     return foundPostById.deletedCount === 1;
   }
 
   async deleteAllPosts(): Promise<boolean> {
     try {
-      const deletedPosts = await PostModel.deleteMany({});
+      const deletedPosts = await this.PostModel.deleteMany({});
       return deletedPosts.acknowledged === true;
     } catch (error) {
       return false;

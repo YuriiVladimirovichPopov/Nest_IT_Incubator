@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import {
-  ReactionModel,
+  Reaction,
+  ReactionDocument,
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
 import { ObjectId } from 'mongodb';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 interface ReactionData {
   parentId: string;
@@ -16,23 +19,26 @@ interface ReactionData {
 
 @Injectable()
 export class ReactionsRepository {
-  constructor() {}
+  constructor(
+    @InjectModel(Reaction.name)
+    private readonly ReactionModel: Model<ReactionDocument>,
+  ) {}
 
   async findByParentAndUserIds(parentId: string, userId: string) {
-    return await ReactionModel.findOne({
+    return await this.ReactionModel.findOne({
       parentId: parentId,
       userId: userId,
     });
   }
 
   async createReaction(reactionData: ReactionData) {
-    const reaction = new ReactionModel(reactionData);
+    const reaction = new this.ReactionModel(reactionData);
     await reaction.save();
     return reaction;
   }
 
   async updateReactionByParentId(newReaction: ReactionData) {
-    return await ReactionModel.updateOne(
+    return await this.ReactionModel.updateOne(
       {
         parentId: newReaction.parentId,
         userId: new ObjectId(newReaction.userId),
