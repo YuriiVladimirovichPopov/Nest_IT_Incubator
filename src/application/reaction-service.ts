@@ -1,12 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { ReactionStatusEnum } from '../domain/schemas/reactionInfo.schema';
-import { ReactionModel } from '../domain/schemas/reactionInfo.schema';
+import {
+  ReactionDocument,
+  ReactionStatusEnum,
+} from '../domain/schemas/reactionInfo.schema';
 import { ReactionsRepository } from '../repositories/reaction-repository';
 import { ReactionMongoDb } from '../types';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class ReactionsService {
-  constructor(private reactionRepository: ReactionsRepository) {}
+  constructor(
+    private readonly ReactionModel: Model<ReactionDocument>,
+    private reactionRepository: ReactionsRepository,
+  ) {}
 
   async addReaction(
     userId: string,
@@ -64,7 +70,7 @@ export class ReactionsService {
   }
 
   async getReactionsForParentId(parentId: string): Promise<ReactionMongoDb[]> {
-    const reactions = await ReactionModel.find({ parentId }).exec();
+    const reactions = await this.ReactionModel.find({ parentId }).exec();
     return reactions.map((reaction) => reaction.toObject() as ReactionMongoDb);
   }
 }

@@ -1,31 +1,37 @@
+import { Injectable } from '@nestjs/common';
 import { ReactionStatusEnum } from '../../domain/schemas/reactionInfo.schema';
 
-export type ReactionInfoViewModel = {
+@Injectable()
+export class ReactionInfoViewModel {
   likesCount: number;
   dislikesCount: number;
   myStatus: ReactionStatusEnum;
-};
+}
 
-export type ExtendedReactionInfoViewModelForPost = {
+@Injectable()
+export class ExtendedReactionInfoViewModelForPost {
   likesCount: number;
   dislikesCount: number;
   myStatus: ReactionStatusEnum;
   newestLikes: NewestLikeDetailsViewModel[];
-};
+}
 
-export type ReactionInfoDBModel = {
+@Injectable()
+export class ReactionInfoDBModel {
   likesCount: number;
   dislikesCount: number;
-};
+}
 
-export type ReactionInfoDBModelForPost = {
+@Injectable()
+export class ReactionInfoDBModelForPost {
   likesCount: number;
   dislikesCount: number;
   newestLikes: NewestLikeDetailsViewModel[];
-};
+}
 
-export type NewestLikeDetailsViewModel = {
+@Injectable()
+export class NewestLikeDetailsViewModel {
   addedAt: string;
   userId: string;
   login: string | null;
-};
+}

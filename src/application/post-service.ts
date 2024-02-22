@@ -1,24 +1,28 @@
-import { PostsInputModel } from '../models/posts/postsInputModel';
+import { PostCreateModel } from 'src/models/posts/postsInputModel';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { PostsRepository } from '../repositories/posts-repository';
 import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 import { Paginated } from 'src/pagination';
 import { PaginatedType } from 'src/pagination';
 import { ReactionsRepository } from '../repositories/reaction-repository';
-import { UserModel } from '../domain/schemas/users.schema';
+import { UserDocument } from '../domain/schemas/users.schema';
 import {
-  ReactionModel,
+  ReactionDocument,
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
 import { ObjectId } from 'mongodb';
-import { PostModel } from '../domain/schemas/posts.schema';
+import { PostDocument } from '../domain/schemas/posts.schema';
 import { ReactionsService } from './reaction-service';
 import { PostsMongoDb } from '../types';
 import { Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class PostsService {
   constructor(
+    private readonly UserModel: Model<UserDocument>,
+    private readonly ReactionModel: Model<ReactionDocument>,
+    private readonly PostModel: Model<PostDocument>,
     private queryPostRepository: QueryPostRepository,
     private postsRepository: PostsRepository,
     private reactionsRepository: ReactionsRepository,
@@ -41,7 +45,7 @@ export class PostsService {
 
   async updatePost(
     id: string,
-    data: PostsInputModel,
+    data: PostCreateModel,
   ): Promise<PostsViewModel | boolean> {
     return await this.postsRepository.updatePost(id, { ...data });
   }
@@ -63,12 +67,12 @@ export class PostsService {
     );
 
     if (!reaction) {
-      const user = await UserModel.findOne({ _id: new ObjectId(userId) });
+      const user = await this.UserModel.findOne({ _id: new ObjectId(userId) });
       if (!user) {
         console.error('User not found');
         return null;
       }
-      reaction = new ReactionModel({
+      reaction = new this.ReactionModel({
         _id: new ObjectId(),
         parentId: postId,
         userId,
@@ -114,7 +118,7 @@ export class PostsService {
   async countUserReactions(
     userId: string,
   ): Promise<{ likes: number; dislikes: number }> {
-    const reactions = await PostModel.aggregate([
+    const reactions = await this.PostModel.aggregate([
       { $unwind: '$likesInfo' },
       {
         $group: {

@@ -1,11 +1,10 @@
 import { PostsMongoDb } from '../types';
 import { ObjectId } from 'mongodb';
-import { PostsInputModel } from '../models/posts/postsInputModel';
+import { PostCreateModel } from 'src/models/posts/postsInputModel';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { PostDocument } from '../domain/schemas/posts.schema';
 import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
 import { ExtendedReactionInfoViewModelForPost } from '../models/reaction/reactionInfoViewModel';
-import { ExtendedReactionForPostDocument } from '../domain/schemas/posts.schema';
 import {
   Reaction,
   ReactionDocument,
@@ -23,13 +22,11 @@ export class PostsRepository {
     @InjectModel(Post.name, Reaction.name)
     private readonly PostModel: Model<PostDocument>,
     private readonly ReactionModel: Model<ReactionDocument>,
-  ) {
-    this.queryBlogsRepository = new QueryBlogsRepository();
-  }
+  ) {}
 
   private postMapper(
     post: PostsMongoDb,
-    postReaction: ExtendedReactionForPostDocument,
+    postReaction: ExtendedReactionInfoViewModelForPost,
   ): PostsViewModel {
     if (!postReaction) {
       postReaction = {
@@ -82,7 +79,7 @@ export class PostsRepository {
     try {
       const createdPost = await this.PostModel.create(createPostForBlog);
       const reaction: ExtendedReactionInfoViewModelForPost =
-        await ExtendedReactionForPostModel.create({
+        await this.ExtendedReactionForPostModel.create({
           postId: createdPost._id,
           likesCount: createPostForBlog.extendedLikesInfo.likesCount,
           dislikesCount: createPostForBlog.extendedLikesInfo.dislikesCount,
@@ -129,7 +126,7 @@ export class PostsRepository {
 
       // Создаем реакции для нового поста
       const reaction: ExtendedReactionInfoViewModelForPost =
-        await ExtendedReactionForPostModel.create({
+        await this.ExtendedReactionForPostModel.create({
           postId: createdPost._id,
           likesCount: createPostForBlog.extendedLikesInfo.likesCount,
           dislikesCount: createPostForBlog.extendedLikesInfo.dislikesCount,
@@ -148,7 +145,7 @@ export class PostsRepository {
 
   async updatePost(
     id: string,
-    data: PostsInputModel,
+    data: PostCreateModel,
   ): Promise<PostsViewModel | boolean> {
     const foundPostById = await this.PostModel.updateOne(
       { _id: new ObjectId(id) },

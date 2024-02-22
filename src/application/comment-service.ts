@@ -1,19 +1,23 @@
 import { ObjectId } from 'mongodb';
-import { CommentModel } from '../domain/schemas/comments.schema';
+import { CommentDocument } from '../domain/schemas/comments.schema';
 import {
-  ReactionModel,
+  ReactionDocument,
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
 import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
 import { ReactionsService } from './reaction-service';
 import { CommentViewModel } from '../models/comments/commentViewModel';
-import { UserModel } from '../domain/schemas/users.schema';
+import { UserDocument } from '../domain/schemas/users.schema';
 import { ReactionsRepository } from '../repositories/reaction-repository';
 import { Injectable } from '@nestjs/common';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class CommentsService {
   constructor(
+    private readonly CommentModel: Model<CommentDocument>,
+    private readonly UserModel: Model<UserDocument>,
+    private readonly ReactionModel: Model<ReactionDocument>,
     private commentsQueryRepository: CommentsQueryRepository,
     private reactionsService: ReactionsService,
     private reactionsRepository: ReactionsRepository,
@@ -39,8 +43,8 @@ export class CommentsService {
     );
 
     if (!reaction) {
-      const user = await UserModel.findOne({ _id: new ObjectId(userId) });
-      reaction = new ReactionModel({
+      const user = await this.UserModel.findOne({ _id: new ObjectId(userId) });
+      reaction = new this.ReactionModel({
         _id: new ObjectId(),
         parentId: commentId,
         userId,
@@ -72,11 +76,11 @@ export class CommentsService {
 
   async updateCommentLikesInfo(comment: CommentViewModel) {
     const [likesCount, dislikesCount] = await Promise.all([
-      ReactionModel.countDocuments({
+      this.ReactionModel.countDocuments({
         parentId: comment.id,
         myStatus: ReactionStatusEnum.Like,
       }),
-      ReactionModel.countDocuments({
+      this.ReactionModel.countDocuments({
         parentId: comment.id,
         myStatus: ReactionStatusEnum.Dislike,
       }),
@@ -85,7 +89,7 @@ export class CommentsService {
     const myStatus = comment.likesInfo.myStatus;
 
     comment.likesInfo = { likesCount, dislikesCount, myStatus };
-    await CommentModel.findByIdAndUpdate(comment.id, {
+    await this.CommentModel.findByIdAndUpdate(comment.id, {
       likesInfo: comment.likesInfo,
     });
   }
@@ -93,7 +97,7 @@ export class CommentsService {
   async countUserReactions(
     userId: string,
   ): Promise<{ likes: number; dislikes: number }> {
-    const reactions = await CommentModel.aggregate([
+    const reactions = await this.CommentModel.aggregate([
       { $unwind: '$likesInfo' },
       {
         $group: {

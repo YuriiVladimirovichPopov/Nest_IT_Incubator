@@ -2,7 +2,7 @@ import { DeviceMongoDbType } from '../types';
 import { Device, DeviceDocument } from '../domain/schemas/device.schema';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 @Injectable()
 export class DeviceRepository {
@@ -31,13 +31,19 @@ export class DeviceRepository {
 
   async getAllDevicesByUser(userId: string): Promise<DeviceMongoDbType[]> {
     try {
-      const devices: DeviceDocument[] | null = await this.DeviceModel.find(
+      const devices = await this.DeviceModel.find(
         { userId },
         { projection: { _id: 0, userId: 0 } },
       ).lean();
-      return devices.map((device) => ({
+      return devices.map((device: any) => ({
         ...device,
-        _id: new Object(device._id), // Преобразуем _id к типу ObjectId
+        _id: new Types.ObjectId(device._id), // TODO объектАйДи перечеркнут. Это нормально?
+        /* Да, это нормально. Если вы используете TypeScript с Mongoose, 
+        и вы импортировали Types из mongoose, 
+        то метод new Types.ObjectId() будет правильно создавать новый объект ObjectId. 
+        Строку ObjectId зачеркивают в вашей среде разработки, потому что это тип, а не значение. 
+        Это связано с тем, что в TypeScript могут быть значения и типы с одинаковыми именами, 
+        и иногда среды разработки могут выделять различным образом типы и значения. */
       }));
     } catch (error) {
       console.error('Error getting devices by userId:', error);

@@ -7,7 +7,6 @@ import {
   ExtendedReactionForPostModel,
   PostDocument,
 } from '../domain/schemas/posts.schema';
-
 import {
   ReactionDocument,
   ReactionStatusEnum,
@@ -20,7 +19,7 @@ import { Model } from 'mongoose';
 @Injectable()
 export class QueryPostRepository {
   constructor(
-    @InjectModel(Post.name, Comment.name)
+    @InjectModel(Post.name, Comment.name) //, Reaction.name
     private readonly PostModel: Model<PostDocument>,
     private readonly CommentModel: Model<CommentDocument>,
     private readonly ReactionModel: Model<ReactionDocument>,

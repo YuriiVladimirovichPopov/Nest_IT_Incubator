@@ -1,10 +1,10 @@
 import { ObjectId } from 'mongodb';
 import { PaginatedType } from 'src/pagination';
 import { Paginated } from 'src/pagination';
-import { CommentsMongoDbType } from '../types';
 import { CommentViewModel } from '../models/comments/commentViewModel';
 import { Comment, CommentDocument } from '../domain/schemas/comments.schema';
 import {
+  Reaction,
   ReactionDocument,
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
@@ -15,7 +15,7 @@ import { Model } from 'mongoose';
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
-    @InjectModel(Comment.name)
+    @InjectModel(Comment.name, Reaction.name)
     private readonly CommentModel: Model<CommentDocument>,
     private readonly ReactionModel: Model<ReactionDocument>,
   ) {}
@@ -85,11 +85,9 @@ export class CommentsQueryRepository {
     id: string,
     userId?: string,
   ): Promise<CommentViewModel | null> {
-    const comment: CommentsMongoDbType | null = await this.CommentModel.findOne(
-      {
-        _id: new ObjectId(id),
-      },
-    ).exec();
+    const comment: Comment | null = await this.CommentModel.findOne({
+      _id: new ObjectId(id),
+    }).exec();
 
     if (!comment) return null;
 

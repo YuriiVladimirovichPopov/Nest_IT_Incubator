@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { BlogInputModel } from '../models/blogs/blogsInputModel';
+import { BlogCreateModel } from 'src/models/blogs/blogsInputModel';
 import { BlogsMongoDbType } from '../types';
 import { BlogViewModel } from '../models/blogs/blogsViewModel';
 import { Blog, BlogDocument } from '../domain/schemas/blogs.schema';
@@ -30,7 +30,7 @@ export class BlogsRepository {
     return this._blogMapper(newBlog);
   }
 
-  async updateBlog(id: string, data: BlogInputModel): Promise<boolean> {
+  async updateBlog(id: string, data: BlogCreateModel): Promise<boolean> {
     if (!ObjectId.isValid(id)) {
       return false;
     }

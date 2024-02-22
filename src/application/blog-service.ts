@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { BlogInputModel } from '../models/blogs/blogsInputModel';
+import { BlogCreateModel } from '../models/blogs/blogsInputModel';
 import { BlogsMongoDbType } from '../types';
 import { BlogViewModel } from '../models/blogs/blogsViewModel';
 import { BlogsRepository } from '../repositories/blogs-repository';
@@ -24,7 +24,7 @@ export class BlogService {
     return await this.queryBlogsRepository.findBlogById(id);
   }
 
-  async createBlog(data: BlogInputModel): Promise<BlogViewModel> {
+  async createBlog(data: BlogCreateModel): Promise<BlogViewModel> {
     const newBlog: BlogsMongoDbType = {
       _id: new ObjectId(),
       ...data,
@@ -36,7 +36,7 @@ export class BlogService {
     return createdBlog;
   }
 
-  async updateBlog(id: string, data: BlogInputModel): Promise<boolean> {
+  async updateBlog(id: string, data: BlogCreateModel): Promise<boolean> {
     return await this.blogsRepository.updateBlog(id, { ...data });
   }
 

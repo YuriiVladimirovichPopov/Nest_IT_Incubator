@@ -20,6 +20,10 @@ import { DeviceRepository } from './repositories/device-repository';
 import { PostsRepository } from './repositories/posts-repository';
 import { ReactionsRepository } from './repositories/reaction-repository';
 import { UsersRepository } from './repositories/users-repository';
+import { QueryBlogsRepository } from './query repozitory/queryBlogsRepository';
+import { CommentsQueryRepository } from './query repozitory/queryCommentsRepository';
+import { QueryPostRepository } from './query repozitory/queryPostsRepository';
+import { QueryUserRepository } from './query repozitory/queryUserRepository';
 
 @Module({
   imports: [MongooseModule.forRoot('mongodb://localhost/nest')], //тут меняем для монгус 13 видео
@@ -47,6 +51,11 @@ import { UsersRepository } from './repositories/users-repository';
     PostsRepository,
     ReactionsRepository,
     UsersRepository,
+    //queryRepositories
+    QueryBlogsRepository,
+    CommentsQueryRepository,
+    QueryPostRepository,
+    QueryUserRepository,
   ],
 })
 export class AppModule {}

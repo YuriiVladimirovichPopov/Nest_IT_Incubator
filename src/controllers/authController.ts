@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { ObjectId } from 'bson';
 import { error } from 'console';
@@ -14,7 +14,7 @@ import { UsersRepository } from '../repositories/users-repository';
 import { httpStatuses } from 'src/send-status';
 import { DeviceMongoDbType, UsersMongoDbType, RequestWithBody } from '../types';
 
-@Injectable()
+@Controller('auth')
 export class AuthController {
   constructor(
     private usersRepository: UsersRepository,

@@ -2,7 +2,7 @@ import { Response, Request } from 'express';
 import { PostsService } from '../application/post-service';
 import { CommentViewModel } from '../models/comments/commentViewModel';
 import { getByIdParam } from '../models/getById';
-import { PostsInputModel } from '../models/posts/postsInputModel';
+import { PostCreateModel } from 'src/models/posts/postsInputModel';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
 import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
@@ -11,12 +11,13 @@ import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 import { httpStatuses } from 'src/send-status';
 import { RequestWithParams, UsersMongoDbType } from '../types';
 import { PostsRepository } from '../repositories/posts-repository';
-import { Controller, Delete, Get, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, ValidationPipe } from '@nestjs/common';
 import {
   Paginated,
   PaginatedType,
   getPaginationFromQuery,
 } from 'src/pagination';
+import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
 
 @Controller('posts')
 export class PostController {
@@ -57,7 +58,7 @@ export class PostController {
 
     return res.status(httpStatuses.OK_200).send(allCommentsForPostId);
   }
-  /* @Post()
+  @Post()
   async createCommentsByPostId(req: Request, res: Response) {
     const postWithId: PostsViewModel | null =
       await this.queryPostRepository.findPostById(
@@ -88,7 +89,7 @@ export class PostController {
         },
       );
     return res.status(httpStatuses.CREATED_201).send(comment);
-  } */
+  }
 
   @Get('posts')
   async getAllPosts(req: Request, res: Response<Paginated<PostsViewModel>>) {
@@ -140,10 +141,7 @@ export class PostController {
   }
 
   @Put('posts/:id')
-  async updatePostById(
-    req: Request<getByIdParam, PostsInputModel>,
-    res: Response<PostsViewModel>,
-  ) {
+  async updatePostById(@Body(ValidationPipe) PostCreateModel: PostCreateModel) {
     const updatePost = await this.postsService.updatePost(
       req.params.id,
       req.body,
@@ -156,7 +154,7 @@ export class PostController {
     }
   }
 
-  /* @Put()
+  @Put()
   async updateLikesDislikesForPost(req: Request, res: Response) {
     try {
       const postId = req.params.postId;
@@ -195,7 +193,7 @@ export class PostController {
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
         .send({ message: 'Сервер на кофе-брейке!' });
     }
-  } */
+  }
 
   @Delete('delete/:id')
   async deletePostById(req: RequestWithParams<getByIdParam>, res: Response) {

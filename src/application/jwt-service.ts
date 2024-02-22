@@ -1,7 +1,8 @@
 import { settings } from 'src/main';
-import { UsersMongoDbType } from '../types';
+//import { UsersMongoDbType } from '../types';
 import { Injectable } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
+import { User } from 'src/domain/schemas/users.schema';
 
 export type Payload = {
   userId: string;
@@ -12,7 +13,7 @@ export type Payload = {
 
 @Injectable()
 export class JWTService {
-  createJWT(user: UsersMongoDbType) {
+  createJWT(user: User) {
     const token = jwt.sign(
       { userId: user._id.toString() },
       settings.accessTokenSecret1,
