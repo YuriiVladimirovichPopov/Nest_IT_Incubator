@@ -11,7 +11,7 @@ import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 import { httpStatuses } from 'src/send-status';
 import { RequestWithParams, UsersMongoDbType } from '../types';
 import { PostsRepository } from '../repositories/posts-repository';
-import { Body, Controller, Delete, Get, Post, Put, ValidationPipe } from '@nestjs/common';
+import { Controller, Delete, Get, Post, Put } from '@nestjs/common';
 import {
   Paginated,
   PaginatedType,
@@ -141,7 +141,10 @@ export class PostController {
   }
 
   @Put('posts/:id')
-  async updatePostById(@Body(ValidationPipe) PostCreateModel: PostCreateModel) {
+  async updatePostById(
+    req: Request<getByIdParam, PostCreateModel>,
+    res: Response<PostsViewModel>,
+  ) {
     const updatePost = await this.postsService.updatePost(
       req.params.id,
       req.body,

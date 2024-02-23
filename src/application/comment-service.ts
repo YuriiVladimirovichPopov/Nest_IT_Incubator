@@ -1,22 +1,27 @@
 import { ObjectId } from 'mongodb';
-import { CommentDocument } from '../domain/schemas/comments.schema';
+import { Comment, CommentDocument } from '../domain/schemas/comments.schema';
 import {
+  Reaction,
   ReactionDocument,
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
 import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
 import { ReactionsService } from './reaction-service';
 import { CommentViewModel } from '../models/comments/commentViewModel';
-import { UserDocument } from '../domain/schemas/users.schema';
+import { User, UserDocument } from '../domain/schemas/users.schema';
 import { ReactionsRepository } from '../repositories/reaction-repository';
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class CommentsService {
   constructor(
+    @InjectModel(Comment.name)
     private readonly CommentModel: Model<CommentDocument>,
+    @InjectModel(User.name)
     private readonly UserModel: Model<UserDocument>,
+    @InjectModel(Reaction.name)
     private readonly ReactionModel: Model<ReactionDocument>,
     private commentsQueryRepository: CommentsQueryRepository,
     private reactionsService: ReactionsService,

@@ -5,23 +5,28 @@ import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 import { Paginated } from 'src/pagination';
 import { PaginatedType } from 'src/pagination';
 import { ReactionsRepository } from '../repositories/reaction-repository';
-import { UserDocument } from '../domain/schemas/users.schema';
+import { User, UserDocument } from '../domain/schemas/users.schema';
 import {
+  Reaction,
   ReactionDocument,
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
 import { ObjectId } from 'mongodb';
-import { PostDocument } from '../domain/schemas/posts.schema';
+import { Post, PostDocument } from '../domain/schemas/posts.schema';
 import { ReactionsService } from './reaction-service';
 import { PostsMongoDb } from '../types';
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class PostsService {
   constructor(
+    @InjectModel(User.name)
     private readonly UserModel: Model<UserDocument>,
+    @InjectModel(Reaction.name)
     private readonly ReactionModel: Model<ReactionDocument>,
+    @InjectModel(Post.name)
     private readonly PostModel: Model<PostDocument>,
     private queryPostRepository: QueryPostRepository,
     private postsRepository: PostsRepository,

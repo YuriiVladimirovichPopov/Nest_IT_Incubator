@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import {
+  Reaction,
   ReactionDocument,
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
 import { ReactionsRepository } from '../repositories/reaction-repository';
 import { ReactionMongoDb } from '../types';
 import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class ReactionsService {
   constructor(
+    @InjectModel(Reaction.name)
     private readonly ReactionModel: Model<ReactionDocument>,
     private reactionRepository: ReactionsRepository,
   ) {}

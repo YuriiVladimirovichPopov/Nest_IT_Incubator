@@ -1,17 +1,15 @@
 import { Module } from '@nestjs/common';
-//import { AppController } from './app.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-//import { AuthController } from './controllers/authController';
+import { AuthController } from './controllers/authController';
 import { BlogsController } from './controllers/blogsController';
 import { CommentController } from './controllers/commentController';
 import { PostController } from './controllers/postController';
 import { UserController } from './controllers/userController';
-//import { ReactionController } from './controllers/reactionController';
-//import { SecurityController } from './controllers/securityController';
+import { ReactionController } from './controllers/reactionController';
+import { SecurityController } from './controllers/securityController';
 import { TestController } from './controllers/testController';
 import { ReactionsService } from './application/reaction-service';
 import { PostsService } from './application/post-service';
-import { AuthService } from './application/auth-service';
 import { BlogService } from './application/blog-service';
 import { CommentsService } from './application/comment-service';
 import { BlogsRepository } from './repositories/blogs-repository';
@@ -24,20 +22,46 @@ import { QueryBlogsRepository } from './query repozitory/queryBlogsRepository';
 import { CommentsQueryRepository } from './query repozitory/queryCommentsRepository';
 import { QueryPostRepository } from './query repozitory/queryPostsRepository';
 import { QueryUserRepository } from './query repozitory/queryUserRepository';
+import { User, UserSchema } from './domain/schemas/users.schema';
+import { Device, DeviceSchema } from './domain/schemas/device.schema';
+import { Reaction, ReactionSchema } from './domain/schemas/reactionInfo.schema';
+import { Blog, BlogSchema } from './domain/schemas/blogs.schema';
+import { Comment, CommentSchema } from './domain/schemas/comments.schema';
+import {
+  ExtendedReaction,
+  ExtendedReactionForPostSchema,
+  Post,
+  PostSchema,
+} from './domain/schemas/posts.schema';
+import { AuthService } from './application/auth-service';
 
+const schemas = [
+  { name: User.name, schema: UserSchema },
+  { name: Blog.name, schema: BlogSchema },
+  { name: Post.name, schema: PostSchema },
+  { name: Comment.name, schema: CommentSchema },
+  { name: Device.name, schema: DeviceSchema },
+  { name: Reaction.name, schema: ReactionSchema },
+  { name: ExtendedReaction.name, schema: ExtendedReactionForPostSchema },
+];
 @Module({
-  imports: [MongooseModule.forRoot('mongodb://localhost/nest')], //тут меняем для монгус 13 видео
+  imports: [
+    MongooseModule.forRoot('mongodb://localhost:27017/'),
+    MongooseModule.forFeature(schemas),
+  ], //тут меняем для монгус 13 видео
+
   controllers: [
-    //AuthController,
+    AuthController,
     BlogsController,
     CommentController,
     PostController,
-    //ReactionController,
-    //SecurityController,
+    ReactionController,
+    SecurityController,
     TestController,
     UserController,
   ],
   providers: [
+    //services
     AuthService,
     BlogService,
     CommentsService,

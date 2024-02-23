@@ -9,7 +9,7 @@ export class BlogCreateModel {
   })
   name: string;
 
-  @IsString()
+  @IsString() // TODO: всЁ поменять местами
   @Length(2, 500)
   @IsNotEmpty()
   @Matches(/.*\S+.*/, {
@@ -21,7 +21,8 @@ export class BlogCreateModel {
   @Length(5, 100)
   @IsNotEmpty()
   @IsUrl()
-  @Matches(/.*\S+.*/, { // TODO: change this string, may be it's wrong
+  @Matches(/.*\S+.*/, {
+    // TODO: change this string, may be it's wrong
     message: 'websiteUrl should not consist of whitespace characters', // TODO: change this string, may be it's wrong
   })
   websiteUrl: string;

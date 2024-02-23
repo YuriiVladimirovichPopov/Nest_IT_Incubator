@@ -20,8 +20,9 @@ import { Model } from 'mongoose';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name, Device.name)
+    @InjectModel(User.name)
     private readonly UserModel: Model<UserDocument>,
+    @InjectModel(Device.name)
     private readonly DeviceModel: Model<DeviceDocument>,
     private readonly usersRepository: UsersRepository,
     private readonly queryUserRepository: QueryUserRepository,

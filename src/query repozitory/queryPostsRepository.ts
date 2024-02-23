@@ -4,14 +4,17 @@ import { ObjectId, WithId } from 'mongodb';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { Comment, CommentDocument } from '../domain/schemas/comments.schema';
 import {
-  ExtendedReactionForPostModel,
+  ExtendedReaction,
+  ExtendedReactionForPostDocument,
+  Post,
   PostDocument,
 } from '../domain/schemas/posts.schema';
 import {
+  Reaction,
   ReactionDocument,
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
-import { Injectable, Post } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Paginated } from 'src/pagination';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -19,10 +22,14 @@ import { Model } from 'mongoose';
 @Injectable()
 export class QueryPostRepository {
   constructor(
-    @InjectModel(Post.name, Comment.name) //, Reaction.name
+    @InjectModel(Post.name)
     private readonly PostModel: Model<PostDocument>,
+    @InjectModel(Comment.name)
     private readonly CommentModel: Model<CommentDocument>,
+    @InjectModel(Reaction.name)
     private readonly ReactionModel: Model<ReactionDocument>,
+    @InjectModel(ExtendedReaction.name)
+    private readonly ExtendedReactionForPostModel: Model<ExtendedReactionForPostDocument>,
   ) {}
   _postMapper(
     post: PostsMongoDb,
@@ -133,7 +140,7 @@ export class QueryPostRepository {
       myStatus = reaction ? reaction.myStatus : ReactionStatusEnum.None;
     }
 
-    await ExtendedReactionForPostModel.findOne({
+    await this.ExtendedReactionForPostModel.findOne({
       postId: findPost._id.toString(),
     }).lean();
 

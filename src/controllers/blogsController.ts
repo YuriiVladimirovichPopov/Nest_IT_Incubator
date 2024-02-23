@@ -9,7 +9,6 @@ import { httpStatuses } from 'src/send-status';
 import { PostsRepository } from '../repositories/posts-repository';
 import { UserViewModel } from '../models/users/userViewModel';
 import {
-  Body,
   Controller,
   Delete,
   Get,
@@ -20,6 +19,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { Paginated, PaginatedType, parsePaginatedType } from 'src/pagination';
+import { RequestWithBody } from 'src/types';
 
 @Controller('blogs')
 export class BlogsController {
@@ -38,7 +38,7 @@ export class BlogsController {
 
   @Post('blogs')
   async createBlogs(
-    @Body() blog: BlogCreateModel,
+    req: RequestWithBody<BlogViewModel>,
     res: Response<BlogViewModel>,
   ) {
     const newBlog = await this.blogService.createBlog(req.body);

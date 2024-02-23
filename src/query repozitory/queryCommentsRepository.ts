@@ -15,8 +15,9 @@ import { Model } from 'mongoose';
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
-    @InjectModel(Comment.name, Reaction.name)
+    @InjectModel(Comment.name)
     private readonly CommentModel: Model<CommentDocument>,
+    @InjectModel(Reaction.name)
     private readonly ReactionModel: Model<ReactionDocument>,
   ) {}
 
@@ -48,7 +49,10 @@ export class CommentsQueryRepository {
       (el: Comment): CommentViewModel => ({
         id: el._id.toString(),
         content: el.content,
-        commentatorInfo: el.commentatorInfo,
+        commentatorInfo: {
+          userId: el.commentatorInfo.userId.toString(),
+          userLogin: el.commentatorInfo.userLogin,
+        },
         createdAt: el.createdAt,
         likesInfo: {
           likesCount: el.likesInfo.likesCount,
@@ -74,12 +78,6 @@ export class CommentsQueryRepository {
 
     return response;
   }
-  //В этом изменении мы сначала получаем все реакции пользователя (userId) на комментарии в посте (postId),
-  //а затем создаем карту (Map),
-  //связывающую ID комментария с соответствующим статусом реакции пользователя.
-  //При формировании CommentViewModel, мы используем эту карту,
-  //чтобы добавить правильный myStatus для каждого комментария.
-  //Этот подход более эффективен, чем выполнять отдельный запрос к базе данных для каждого комментария.
 
   async findCommentById(
     id: string,
@@ -104,7 +102,10 @@ export class CommentsQueryRepository {
 
     return {
       id: comment._id.toString(),
-      commentatorInfo: comment.commentatorInfo,
+      commentatorInfo: {
+        userId: comment.commentatorInfo.userId.toString(),
+        userLogin: comment.commentatorInfo.userLogin,
+      },
       content: comment.content,
       createdAt: comment.createdAt,
       likesInfo: {
@@ -147,7 +148,10 @@ export class CommentsQueryRepository {
       (comment: Comment): CommentViewModel => ({
         id: comment._id.toString(),
         content: comment.content,
-        commentatorInfo: comment.commentatorInfo,
+        commentatorInfo: {
+          userId: comment.commentatorInfo.userId.toString(),
+          userLogin: comment.commentatorInfo.userLogin,
+        },
         createdAt: comment.createdAt,
         likesInfo: {
           likesCount: comment.likesInfo.likesCount,
@@ -174,11 +178,4 @@ export class CommentsQueryRepository {
 
     return response;
   }
-  //  мы сначала извлекаем все комментарии,
-  //затем получаем реакции пользователя на эти комментарии.
-  //Создавая mappedComments, мы добавляем myStatus,
-  //используя карту userReactionsMap,
-  //которая связывает ID комментария с статусом реакции пользователя.
-  //Если реакция не найдена, используется значение по умолчанию ReactionStatusEnum.None.
-  //Это обеспечивает, что каждый комментарий в ответе будет содержать информацию о реакции пользователя.
 }

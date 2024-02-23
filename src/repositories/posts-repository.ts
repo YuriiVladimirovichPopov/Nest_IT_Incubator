@@ -2,7 +2,7 @@ import { PostsMongoDb } from '../types';
 import { ObjectId } from 'mongodb';
 import { PostCreateModel } from 'src/models/posts/postsInputModel';
 import { PostsViewModel } from '../models/posts/postsViewModel';
-import { PostDocument } from '../domain/schemas/posts.schema';
+import { Post, PostDocument } from '../domain/schemas/posts.schema';
 import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
 import { ExtendedReactionInfoViewModelForPost } from '../models/reaction/reactionInfoViewModel';
 import {
@@ -11,7 +11,7 @@ import {
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
 import { UserViewModel } from '../models/users/userViewModel';
-import { Injectable, Post } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -19,14 +19,16 @@ import { Model } from 'mongoose';
 export class PostsRepository {
   private queryBlogsRepository: QueryBlogsRepository;
   constructor(
-    @InjectModel(Post.name, Reaction.name)
+    @InjectModel(Post.name)
     private readonly PostModel: Model<PostDocument>,
+    @InjectModel(Reaction.name)
     private readonly ReactionModel: Model<ReactionDocument>,
+    //private readonly ExtendedReactionForPostModel: Model<ExtendedReactionForPostDocument>,
   ) {}
 
   private postMapper(
     post: PostsMongoDb,
-    postReaction: ExtendedReactionInfoViewModelForPost,
+    postReaction: ExtendedReactionInfoViewModelForPost | null,
   ): PostsViewModel {
     if (!postReaction) {
       postReaction = {
@@ -78,16 +80,8 @@ export class PostsRepository {
 
     try {
       const createdPost = await this.PostModel.create(createPostForBlog);
-      const reaction: ExtendedReactionInfoViewModelForPost =
-        await this.ExtendedReactionForPostModel.create({
-          postId: createdPost._id,
-          likesCount: createPostForBlog.extendedLikesInfo.likesCount,
-          dislikesCount: createPostForBlog.extendedLikesInfo.dislikesCount,
-          myStatus: ReactionStatusEnum.None,
-          newestLikes: createPostForBlog.extendedLikesInfo.newestLikes || [],
-        });
 
-      return this.postMapper(createPostForBlog, reaction);
+      return this.postMapper(createdPost, null);
     } catch (error) {
       console.error('Error creating post:', error);
       return null;
@@ -96,6 +90,7 @@ export class PostsRepository {
 
   async createdPostForSpecificBlog(
     newPost: PostsViewModel,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     user?: UserViewModel,
   ): Promise<PostsViewModel | null> {
     try {
@@ -125,16 +120,9 @@ export class PostsRepository {
       const createdPost = await this.PostModel.create(createPostForBlog);
 
       // Создаем реакции для нового поста
-      const reaction: ExtendedReactionInfoViewModelForPost =
-        await this.ExtendedReactionForPostModel.create({
-          postId: createdPost._id,
-          likesCount: createPostForBlog.extendedLikesInfo.likesCount,
-          dislikesCount: createPostForBlog.extendedLikesInfo.dislikesCount,
-          newestLikes: [], // Пустой массив, так как новый пост не имеет лайков
-        });
 
       // Преобразуем созданный пост и реакции в формат PostsViewModel
-      const postsViewModel = await this.postMapper(createPostForBlog, reaction);
+      const postsViewModel = this.postMapper(createdPost, null);
 
       return postsViewModel;
     } catch (error) {
