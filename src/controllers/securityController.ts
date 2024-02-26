@@ -3,7 +3,7 @@ import { AuthService } from '../application/auth-service';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { DeviceRepository } from '../repositories/device-repository';
 import { httpStatuses } from 'src/send-status';
-import { Controller, Delete } from '@nestjs/common';
+import { Controller, Delete, Get } from '@nestjs/common';
 
 @Controller('devices')
 export class SecurityController {
@@ -12,7 +12,7 @@ export class SecurityController {
     protected authService: AuthService,
     protected deviceRepository: DeviceRepository,
   ) {}
-
+  @Get()
   async devices(req: Request, res: Response) {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {

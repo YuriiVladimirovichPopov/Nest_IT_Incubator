@@ -6,7 +6,9 @@ import { httpStatuses } from 'src/send-status';
 import { CommentsService } from '../application/comment-service';
 //import { ReactionStatusEnum } from '../domain/schemas/reactionInfo.schema';
 import { UsersMongoDbType } from '../types';
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Delete, Get, Put } from '@nestjs/common';
+import { parsePaginatedType } from 'src/pagination';
+import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
 
 @Controller('comments')
 export class CommentController {
@@ -16,7 +18,7 @@ export class CommentController {
     private commentsService: CommentsService,
   ) {}
 
-  @Get('comment/:id')
+  @Get('/:commentId')
   async getCommentById(req: Request, res: Response) {
     const user = req.body.user as UsersMongoDbType | null;
 
@@ -31,7 +33,7 @@ export class CommentController {
     }
   }
 
-  /* @Put()
+  @Put('/:commentId')
   async updateCommentById(req: Request, res: Response) {
     const user = req.user!;
     const commentId = req.params.commentId;
@@ -53,9 +55,9 @@ export class CommentController {
     if (updateComment) {
       return res.sendStatus(httpStatuses.NO_CONTENT_204);
     }
-  } */
+  }
 
-  /* @Get()
+  @Get('/:commentId')
   async getCommentsByParentId(req: Request, res: Response) {
     try {
       const parentId = req.params.parentId;
@@ -74,9 +76,9 @@ export class CommentController {
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
         .send({ message: 'Сервер на кофе-брейке!' });
     }
-  } */
+  }
 
-  /* @Put()
+  @Put('/:commentId/like-status')
   async updateLikesDislikes(req: Request, res: Response) {
     try {
       const commentId = req.params.commentId;
@@ -102,9 +104,9 @@ export class CommentController {
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
         .send({ message: 'Сервер на кофе-брейке!' });
     }
-  } */
+  }
   //TODO: тут пока не понятно что именно!!!
-  /* async changeCommentReaction(req: Request, res: Response) {
+  async changeCommentReaction(req: Request, res: Response) {
     try {
       const commentId = req.params.commentId;
       const userId = req.user!.id;
@@ -126,9 +128,9 @@ export class CommentController {
         .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
         .send({ message: 'Сервер на кофе-брейке!' });
     }
-  } */
+  }
 
-  /* @Delete()
+  @Delete('/:commentId')
   async deleteCommentById(
     req: Request<{ commentId: string }, { user: string }>,
     res: Response,
@@ -151,5 +153,5 @@ export class CommentController {
     if (commentDelete) {
       return res.sendStatus(httpStatuses.NO_CONTENT_204);
     }
-  } */
+  }
 }

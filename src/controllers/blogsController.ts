@@ -29,14 +29,14 @@ export class BlogsController {
     private queryPostRepository: QueryPostRepository,
   ) {}
   //вроде сделал, но не уверен что работает
-  @Get('blogs')
+  @Get('/')
   async getAllBlogs(
     @Query('Paginated') queryBlogs: PaginatedType,
   ): Promise<Paginated<BlogViewModel>> {
     return this.blogService.findAllBlogs(queryBlogs);
   }
 
-  @Post('blogs')
+  @Post('/')
   async createBlogs(
     req: RequestWithBody<BlogViewModel>,
     res: Response<BlogViewModel>,
@@ -45,7 +45,7 @@ export class BlogsController {
     return res.status(httpStatuses.CREATED_201).send(newBlog);
   }
 
-  @Get('blogs/:id/posts')
+  @Get('/:id/posts')
   async getPostByBlogId(
     req: Request<{ blogId: string }, { user: UserViewModel }>,
     res: Response,
@@ -68,7 +68,7 @@ export class BlogsController {
     return res.status(httpStatuses.OK_200).send(foundBlogWithAllPosts);
   }
 
-  @Post('blogs/:id/posts')
+  @Post('/:id/posts')
   async createPostForBlogById(req: Request, res: Response) {
     const blogId = req.params.blogId;
 
@@ -100,14 +100,14 @@ export class BlogsController {
     return res.sendStatus(httpStatuses.NOT_FOUND_404);
   }
   //вроде сделал, надо ли http коды прописывать?
-  @Get('blogs/:id')
+  @Get('/:id')
   async getBlogById(@Param(':id') blogId: string): Promise<BlogViewModel> {
     const foundBlog = await this.blogService.findBlogById(blogId);
     if (!foundBlog) throw new NotFoundException();
     return foundBlog;
   }
 
-  @Put('blogs/:id')
+  @Put('/:id')
   async updateBlogById(
     req: Request<getByIdParam, BlogCreateModel>,
     res: Response<BlogViewModel>,
@@ -121,7 +121,7 @@ export class BlogsController {
     return res.sendStatus(httpStatuses.NO_CONTENT_204);
   }
   // вроде сделал. Не уверен насчет http статуса!!!
-  @Delete('blogs/:id')
+  @Delete('/:id')
   async deleteBlogById(@Param('id') blogId: string) {
     const foundBlog = await this.blogService.deleteBlog(blogId);
     if (!foundBlog) {

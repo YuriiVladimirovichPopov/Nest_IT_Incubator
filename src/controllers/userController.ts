@@ -23,7 +23,7 @@ export class UserController {
     private authService: AuthService,
   ) {}
 
-  @Get('users')
+  @Get('/')
   async getAllUsers(req: Request, res: Response) {
     const pagination = getUsersPagination(
       req.query as unknown as PaginatedType, // TODO bad solution
@@ -34,7 +34,7 @@ export class UserController {
     return res.status(httpStatuses.OK_200).send(allUsers);
   }
   // вроде правильно сделал
-  @Post('users')
+  @Post('/')
   async createNewUser(@Body() inputModel: UserInputModel) {
     const newUser = await this.authService.createUser(
       inputModel.login,
@@ -47,7 +47,7 @@ export class UserController {
     return newUser;
   }
 
-  @Delete('users/:id')
+  @Delete('/:id')
   async deleteUserById(req: RequestWithParams<getByIdParam>, res: Response) {
     const foundUser = await this.usersRepository.deleteUserById(req.params.id);
     if (!foundUser) {

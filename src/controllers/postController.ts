@@ -31,7 +31,7 @@ export class PostController {
     private postsRepository: PostsRepository,
   ) {}
 
-  @Get('post/:id/comments')
+  @Get('/:id/comments')
   async getCommentsByPostId(
     req: Request,
     res: Response<Paginated<CommentViewModel>>,
@@ -58,7 +58,7 @@ export class PostController {
 
     return res.status(httpStatuses.OK_200).send(allCommentsForPostId);
   }
-  @Post()
+  @Post('/:postId/comments') // TODO тут доделать путь
   async createCommentsByPostId(req: Request, res: Response) {
     const postWithId: PostsViewModel | null =
       await this.queryPostRepository.findPostById(
@@ -91,7 +91,7 @@ export class PostController {
     return res.status(httpStatuses.CREATED_201).send(comment);
   }
 
-  @Get('posts')
+  @Get('/')
   async getAllPosts(req: Request, res: Response<Paginated<PostsViewModel>>) {
     const pagination = getPaginationFromQuery(
       req.query as unknown as PaginatedType, // TODO bad solution
@@ -108,7 +108,7 @@ export class PostController {
     res.status(httpStatuses.OK_200).send(allPosts);
   }
 
-  @Post('posts')
+  @Post('/')
   async createPostByBlogId(req: Request, res: Response<PostsViewModel | null>) {
     const findBlogById = await this.queryBlogsRepository.findBlogById(
       req.body.blogId,
@@ -127,7 +127,7 @@ export class PostController {
     }
   }
 
-  @Get('posts/:id')
+  @Get('/posts/:id')
   async getPostById(req: Request, res: Response) {
     const foundPost = await this.postsService.findPostById(
       req.params.id,
@@ -140,7 +140,7 @@ export class PostController {
     }
   }
 
-  @Put('posts/:id')
+  @Put('/:id')
   async updatePostById(
     req: Request<getByIdParam, PostCreateModel>,
     res: Response<PostsViewModel>,
@@ -157,7 +157,7 @@ export class PostController {
     }
   }
 
-  @Put()
+  @Put('/:postId/like-status')
   async updateLikesDislikesForPost(req: Request, res: Response) {
     try {
       const postId = req.params.postId;
@@ -198,7 +198,7 @@ export class PostController {
     }
   }
 
-  @Delete('delete/:id')
+  @Delete('/:id')
   async deletePostById(req: RequestWithParams<getByIdParam>, res: Response) {
     const foundPost = await this.postsService.deletePost(req.params.id);
     if (!foundPost) {
