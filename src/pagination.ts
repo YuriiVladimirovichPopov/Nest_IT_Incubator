@@ -1,5 +1,99 @@
 import { ParsedQs } from 'qs';
 
+export class Paginated<T> {
+  pagesCount: number;
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  items: T[];
+
+  constructor(
+    pagesCount: number,
+    page: number,
+    pageSize: number,
+    totalCount: number,
+    items: T[],
+  ) {
+    this.pagesCount = pagesCount;
+    this.page = page;
+    this.pageSize = pageSize;
+    this.totalCount = totalCount;
+    this.items = items;
+  }
+}
+
+export class PaginatedType {
+  pageNumber: number = 1;
+  pageSize: number = 10;
+  sortDirection: 'asc' | 'desc' = 'asc';
+  sortBy: string = 'createdAt';
+  skip: number = 0;
+  searchNameTerm?: string;
+  searchLoginTerm?: string;
+  searchEmailTerm?: string;
+
+  constructor(query: ParsedQs) {
+    this.pageNumber = parseInt(query.pageNumber as string, 10) || 1;
+    this.pageSize = parseInt(query.pageSize as string, 10) || 10;
+    this.sortBy = (query.sortBy as string) || 'createdAt';
+    this.sortDirection =
+      (query.sortDirection as string) === 'asc' ? 'asc' : 'desc';
+    this.skip = (this.pageNumber - 1) * this.pageSize;
+    this.searchNameTerm = query.searchNameTerm as string;
+    this.searchLoginTerm = query.searchLoginTerm as string;
+    this.searchEmailTerm = query.searchEmailTerm as string;
+  }
+}
+
+export class DefaultPagination {
+  constructor(
+    public pageNumber: number = 1,
+    public pageSize: number = 10,
+    public sortBy: string = 'createdAt',
+    public sortDirection: 'asc' | 'desc' = 'asc',
+    public skip: number = 0,
+  ) {}
+}
+
+export type UserPagination = DefaultPagination & {
+  searchLoginTerm?: string;
+  searchEmailTerm?: string;
+};
+
+export const getPaginationFromQuery = (
+  query: PaginatedType,
+): DefaultPagination => {
+  return new DefaultPagination(
+    query.pageNumber,
+    query.pageSize,
+    query.sortBy,
+    query.sortDirection,
+    query.skip,
+  );
+};
+
+export const getDefaultPagination = (
+  query: PaginatedType,
+): DefaultPagination => {
+  return new DefaultPagination(
+    query.pageNumber,
+    query.pageSize,
+    query.sortBy,
+    query.sortDirection,
+    query.skip,
+  );
+};
+
+export const getUsersPagination = (query: PaginatedType): UserPagination => {
+  return {
+    ...getPaginationFromQuery(query),
+    searchEmailTerm: query.searchEmailTerm || '',
+    searchLoginTerm: query.searchLoginTerm || '',
+  };
+};
+
+/* import { ParsedQs } from 'qs';
+
 export const parsePaginatedType = (query: ParsedQs): PaginatedType => {
   return {
     pageNumber: parseInt(query.pageNumber as string, 10) || 1,
@@ -15,32 +109,48 @@ export const parsePaginatedType = (query: ParsedQs): PaginatedType => {
   };
 };
 
-export type Paginated<T> = {
+export class Paginated<T> {
   pagesCount: number;
   page: number;
   pageSize: number;
   totalCount: number;
   items: T[];
-};
 
-export type PaginatedType = {
-  pageNumber: number;
-  pageSize: number;
-  sortDirection: 'asc' | 'desc';
-  sortBy: string;
-  skip: number;
-  searchNameTerm?: string;
-  searchLoginTerm?: string;
-  searchEmailTerm?: string;
-};
+  constructor(
+    pagesCount: number,
+    page: number,
+    pageSize: number,
+    totalCount: number,
+    items: T[],
+  ) {
+    this.pagesCount = pagesCount;
+    this.page = page;
+    this.pageSize = pageSize;
+    this.totalCount = totalCount;
+    this.items = items;
+  }
+}
 
-export type DefaultPagination = {
-  pageNumber: number;
-  pageSize: number;
-  sortBy: string;
-  sortDirection: 'asc' | 'desc';
-  skip: number;
-};
+export class PaginatedType {
+  pageNumber: number | null = 1;
+  pageSize: number | null = 10;
+  sortDirection: 'asc' | 'desc' = 'asc';
+  sortBy: string | null = null;
+  skip: number | null = null;
+  searchNameTerm?: string | null = null;
+  searchLoginTerm?: string | null = null;
+  searchEmailTerm?: string | null = null;
+}
+
+export class DefaultPagination {
+  constructor(
+    public pageNumber: number,
+    public pageSize: number,
+    public sortBy: string,
+    public sortDirection: 'asc' | 'desc',
+    public skip: number,
+  ) {}
+}
 
 export type UserPagination = DefaultPagination & {
   searchLoginTerm?: string;
@@ -135,3 +245,4 @@ export const getUsersPagination = (query: PaginatedType): UserPagination => {
 
   return defaultValues;
 };
+ */

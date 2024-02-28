@@ -1,0 +1,5 @@
+{
+    "eslint.debug": true,
+    "eslint.enable": false,
+    "eslint.execArgv": null
+}

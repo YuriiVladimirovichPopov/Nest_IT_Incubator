@@ -1,5 +1,5 @@
 import { ObjectId, WithId } from 'mongodb';
-import { BlogsMongoDbType } from '../types';
+//import { BlogsMongoDbType } from '../types';
 import { BlogViewModel } from '../models/blogs/blogsViewModel';
 import { PaginatedType } from 'src/pagination';
 import { Paginated } from 'src/pagination';
@@ -14,7 +14,7 @@ export class QueryBlogsRepository {
     @InjectModel(Blog.name)
     private readonly BlogModel: Model<BlogDocument>,
   ) {}
-  _blogMapper(blog: BlogsMongoDbType): BlogViewModel {
+  _blogMapper(blog: BlogDocument): BlogViewModel {
     return {
       id: blog._id.toString(),
       name: blog.name,
@@ -34,12 +34,16 @@ export class QueryBlogsRepository {
         name: { $regex: pagination.searchNameTerm || '', $options: 'i' },
       };
     }
-    const result: WithId<BlogsMongoDbType>[] = await this.BlogModel.find(filter)
 
-      .sort({ [pagination.sortBy]: pagination.sortDirection })
+    const resultQuery = this.BlogModel.find(filter)
       .skip(pagination.skip)
-      .limit(pagination.pageSize)
-      .lean();
+      .limit(pagination.pageSize);
+
+    if (pagination.sortBy && pagination.sortDirection) {
+      resultQuery.sort({ [pagination.sortBy]: pagination.sortDirection });
+    }
+
+    const result: WithId<BlogDocument>[] = await resultQuery.lean();
 
     const totalCount: number = await this.BlogModel.countDocuments(filter);
     const pageCount: number = Math.ceil(totalCount / pagination.pageSize);
@@ -54,6 +58,15 @@ export class QueryBlogsRepository {
     return res;
   }
 
+  /*   import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
+
+@Injectable()
+export class ValidationPipe implements PipeTransform {
+  transform(value: any, metadata: ArgumentMetadata) {
+    return value;
+  }
+} */
+
   async findBlogById(id: string): Promise<BlogViewModel | null> {
     if (!isValidObjectId(id)) return null;
     const blogById = await this.BlogModel.findOne({
@@ -62,6 +75,6 @@ export class QueryBlogsRepository {
     if (!blogById) {
       return null;
     }
-    return this._blogMapper(blogById.toObject()); // TODO: add .toObject() method
+    return this._blogMapper(blogById.toObject());
   }
 }

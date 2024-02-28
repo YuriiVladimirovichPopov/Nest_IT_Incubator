@@ -7,7 +7,7 @@ import { CommentsService } from '../application/comment-service';
 //import { ReactionStatusEnum } from '../domain/schemas/reactionInfo.schema';
 import { UsersMongoDbType } from '../types';
 import { Controller, Delete, Get, Put } from '@nestjs/common';
-import { parsePaginatedType } from 'src/pagination';
+import { PaginatedType } from 'src/pagination';
 import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
 
 @Controller('comments')
@@ -61,7 +61,7 @@ export class CommentController {
   async getCommentsByParentId(req: Request, res: Response) {
     try {
       const parentId = req.params.parentId;
-      const pagination = parsePaginatedType(req.query);
+      const pagination = new PaginatedType(req.query);
       const userId = req.params.userId;
 
       const paginatedComments =

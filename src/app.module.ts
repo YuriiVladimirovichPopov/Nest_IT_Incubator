@@ -34,6 +34,10 @@ import {
   PostSchema,
 } from './domain/schemas/posts.schema';
 import { AuthService } from './application/auth-service';
+import { TestService } from './application/test-servise';
+import { TestRepository } from './repositories/testing-repository';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const schemas = [
   { name: User.name, schema: UserSchema },
@@ -46,7 +50,7 @@ const schemas = [
 ];
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/'),
+    MongooseModule.forRoot(process.env.mongoUrl || ''),
     MongooseModule.forFeature(schemas),
   ], //тут меняем для монгус 13 видео
 
@@ -65,6 +69,7 @@ const schemas = [
     AuthService,
     BlogService,
     CommentsService,
+    TestService,
     //JWTService,
     PostsService,
     ReactionsService,
@@ -75,6 +80,7 @@ const schemas = [
     PostsRepository,
     ReactionsRepository,
     UsersRepository,
+    TestRepository,
     //queryRepositories
     QueryBlogsRepository,
     CommentsQueryRepository,

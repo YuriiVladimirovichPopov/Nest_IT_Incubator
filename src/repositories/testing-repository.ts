@@ -1,11 +1,11 @@
 import { User, UserDocument } from './../domain/schemas/users.schema';
-import { Injectable, Post } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { Blog, BlogDocument } from 'src/domain/schemas/blogs.schema';
-import { CommentDocument } from 'src/domain/schemas/comments.schema';
+import { Comment, CommentDocument } from 'src/domain/schemas/comments.schema';
 import { Device, DeviceDocument } from 'src/domain/schemas/device.schema';
-import { PostDocument } from 'src/domain/schemas/posts.schema';
+import { Post, PostDocument } from 'src/domain/schemas/posts.schema';
 import {
   Reaction,
   ReactionDocument,

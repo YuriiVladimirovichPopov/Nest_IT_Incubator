@@ -9,6 +9,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -38,7 +39,7 @@ export class UserController {
   async createNewUser(@Body() inputModel: UserInputModel) {
     const newUser = await this.authService.createUser(
       inputModel.login,
-      inputModel.email,
+      inputModel.email, //TODO запихнуть inputModel в обьект
       inputModel.password,
     );
     if (!newUser) {
@@ -48,6 +49,7 @@ export class UserController {
   }
 
   @Delete('/:id')
+  @HttpCode(204)
   async deleteUserById(req: RequestWithParams<getByIdParam>, res: Response) {
     const foundUser = await this.usersRepository.deleteUserById(req.params.id);
     if (!foundUser) {

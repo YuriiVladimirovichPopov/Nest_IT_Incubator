@@ -1,4 +1,4 @@
-/* import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { jwtService } from '../../application/jwt-service';
 import { httpStatuses } from 'src/send-status';
 import { ObjectId } from 'mongodb';
@@ -30,4 +30,3 @@ export const authMiddleware = async (
 
   next();
 };
- */

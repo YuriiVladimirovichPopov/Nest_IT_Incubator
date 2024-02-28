@@ -9,17 +9,18 @@ import { httpStatuses } from 'src/send-status';
 import { PostsRepository } from '../repositories/posts-repository';
 import { UserViewModel } from '../models/users/userViewModel';
 import {
+  Body,
   Controller,
   Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
   Put,
   Query,
 } from '@nestjs/common';
-import { Paginated, PaginatedType, parsePaginatedType } from 'src/pagination';
-import { RequestWithBody } from 'src/types';
+import { Paginated, PaginatedType } from 'src/pagination';
 
 @Controller('blogs')
 export class BlogsController {
@@ -28,21 +29,21 @@ export class BlogsController {
     private postsRepository: PostsRepository,
     private queryPostRepository: QueryPostRepository,
   ) {}
-  //вроде сделал, но не уверен что работает
-  @Get('/')
+  // NOT WORKING
+  @Get()
   async getAllBlogs(
-    @Query('Paginated') queryBlogs: PaginatedType,
+    @Query() queryBlogs: PaginatedType,
   ): Promise<Paginated<BlogViewModel>> {
     return this.blogService.findAllBlogs(queryBlogs);
   }
-
-  @Post('/')
+  //it is WORKING
+  @Post()
+  @HttpCode(201)
   async createBlogs(
-    req: RequestWithBody<BlogViewModel>,
-    res: Response<BlogViewModel>,
-  ) {
-    const newBlog = await this.blogService.createBlog(req.body);
-    return res.status(httpStatuses.CREATED_201).send(newBlog);
+    @Body() createModel: BlogCreateModel,
+  ): Promise<BlogViewModel> {
+    const result = await this.blogService.createBlog(createModel);
+    return result;
   }
 
   @Get('/:id/posts')
@@ -56,7 +57,7 @@ export class BlogsController {
     if (!blogWithPosts) {
       return res.sendStatus(httpStatuses.NOT_FOUND_404);
     }
-    const pagination = parsePaginatedType(req.query);
+    const pagination = new PaginatedType(req.query);
 
     const foundBlogWithAllPosts: Paginated<PostsViewModel> =
       await this.queryPostRepository.findAllPostsByBlogId(
@@ -99,15 +100,17 @@ export class BlogsController {
     }
     return res.sendStatus(httpStatuses.NOT_FOUND_404);
   }
-  //вроде сделал, надо ли http коды прописывать?
+  //вроде сделал NOT WORKING!!!! fuck
   @Get('/:id')
-  async getBlogById(@Param(':id') blogId: string): Promise<BlogViewModel> {
+  @HttpCode(200)
+  async getBlogById(@Param('id') blogId: string): Promise<BlogViewModel> {
     const foundBlog = await this.blogService.findBlogById(blogId);
     if (!foundBlog) throw new NotFoundException();
     return foundBlog;
   }
 
   @Put('/:id')
+  @HttpCode(204)
   async updateBlogById(
     req: Request<getByIdParam, BlogCreateModel>,
     res: Response<BlogViewModel>,
@@ -116,17 +119,18 @@ export class BlogsController {
       req.params.id,
       req.body,
     );
-    if (!updateBlog) return res.sendStatus(httpStatuses.NOT_FOUND_404);
+    if (!updateBlog) return new NotFoundException();
 
     return res.sendStatus(httpStatuses.NO_CONTENT_204);
   }
-  // вроде сделал. Не уверен насчет http статуса!!!
+  // вроде сделал. It is WORKING
   @Delete('/:id')
+  @HttpCode(204)
   async deleteBlogById(@Param('id') blogId: string) {
     const foundBlog = await this.blogService.deleteBlog(blogId);
     if (!foundBlog) {
       return new NotFoundException();
     }
-    return httpStatuses.NO_CONTENT_204;
+    return blogId;
   }
 }
