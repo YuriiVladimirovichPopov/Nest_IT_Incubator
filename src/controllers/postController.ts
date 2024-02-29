@@ -11,7 +11,7 @@ import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 import { httpStatuses } from 'src/send-status';
 import { RequestWithParams, UsersMongoDbType } from '../types';
 import { PostsRepository } from '../repositories/posts-repository';
-import { Controller, Delete, Get, Post, Put } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode, NotFoundException, Post, Put } from '@nestjs/common';
 import {
   Paginated,
   PaginatedType,
@@ -158,6 +158,7 @@ export class PostController {
   }
 
   @Put('/:postId/like-status')
+  @HttpCode(204)
   async updateLikesDislikesForPost(req: Request, res: Response) {
     try {
       const postId = req.params.postId;
@@ -177,20 +178,17 @@ export class PostController {
         });
       }
 
-      
+
       const updatedPost = await this.postsService.updateLikesDislikesForPost(
         postId,
         userId,
         likeStatus,
       );
 
-      if (!updatedPost) {
-        return res
-          .status(httpStatuses.NOT_FOUND_404)
-          .send({ message: 'Post not found' });
-      } else {
-        return res.sendStatus(httpStatuses.NO_CONTENT_204);
-      }
+      if (!updatedPost) throw new NotFoundException({ message: 'Post not found' })
+     
+        return updatedPost;
+      
     } catch (error) {
       console.error('Ошибка при обновлении реакций:', error);
       return res

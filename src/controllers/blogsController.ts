@@ -31,6 +31,7 @@ export class BlogsController {
   ) {}
   // NOT WORKING
   @Get()
+  @HttpCode(200)
   async getAllBlogs(
     @Query() queryBlogs: PaginatedType,
   ): Promise<Paginated<BlogViewModel>> {
@@ -47,6 +48,7 @@ export class BlogsController {
   }
 
   @Get('/:id/posts')
+  @HttpCode(200)
   async getPostByBlogId(
     req: Request<{ blogId: string }, { user: UserViewModel }>,
     res: Response,
@@ -66,10 +68,11 @@ export class BlogsController {
         req.body.user.id.toString(),
       );
 
-    return res.status(httpStatuses.OK_200).send(foundBlogWithAllPosts);
+    return foundBlogWithAllPosts;
   }
 
   @Post('/:id/posts')
+  @HttpCode(201)
   async createPostForBlogById(req: Request, res: Response) {
     const blogId = req.params.blogId;
 
@@ -95,10 +98,10 @@ export class BlogsController {
         extendedLikesInfo,
       });
 
-    if (newPostForBlogById) {
-      return res.status(httpStatuses.CREATED_201).send(newPostForBlogById);
-    }
-    return res.sendStatus(httpStatuses.NOT_FOUND_404);
+    if (!newPostForBlogById) throw new NotFoundException()
+      return newPostForBlogById;
+    
+   
   }
   //вроде сделал NOT WORKING!!!! fuck
   @Get('/:id')

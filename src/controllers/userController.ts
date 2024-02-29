@@ -10,6 +10,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  NotFoundException,
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -25,6 +26,7 @@ export class UserController {
   ) {}
 
   @Get('/')
+  @HttpCode(200)
   async getAllUsers(req: Request, res: Response) {
     const pagination = getUsersPagination(
       req.query as unknown as PaginatedType, // TODO bad solution
@@ -32,10 +34,11 @@ export class UserController {
     const allUsers: Paginated<UserViewModel> =
       await this.usersRepository.findAllUsers(pagination);
 
-    return res.status(httpStatuses.OK_200).send(allUsers);
+    return allUsers;
   }
   // вроде правильно сделал
   @Post('/')
+  @HttpCode(201)
   async createNewUser(@Body() inputModel: UserInputModel) {
     const newUser = await this.authService.createUser(
       inputModel.login,
@@ -52,9 +55,7 @@ export class UserController {
   @HttpCode(204)
   async deleteUserById(req: RequestWithParams<getByIdParam>, res: Response) {
     const foundUser = await this.usersRepository.deleteUserById(req.params.id);
-    if (!foundUser) {
-      return res.sendStatus(httpStatuses.NOT_FOUND_404);
-    }
-    return res.sendStatus(httpStatuses.NO_CONTENT_204);
+    if (!foundUser) throw new NotFoundException()
+    return foundUser;
   }
 }
