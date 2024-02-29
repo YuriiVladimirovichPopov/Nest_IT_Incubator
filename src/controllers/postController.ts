@@ -129,23 +129,6 @@ export class PostController {
     return newPost;
   }
 
-  /* async createPostByBlogId(
-    @Body() blogId: string, 
-    @Body() data: PostsViewModel
-    ): Promise<PostsViewModel> {
-    const findBlogById = await this.queryBlogsRepository.findBlogById(blogId);
-
-    if (!findBlogById) throw new BadRequestException('Blog not found');
-      const newPost: PostsViewModel | null =
-        await this.postsRepository.createdPostForSpecificBlog(data);
-
-      if (!newPost) throw new BadRequestException()
-      return newPost;
-    
-  } */
-
-
-
   @Get('/posts/:id')
   async getPostById(req: Request, res: Response) {
     const foundPost = await this.postsService.findPostById(
