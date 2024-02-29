@@ -177,6 +177,7 @@ export class PostController {
         });
       }
 
+      
       const updatedPost = await this.postsService.updateLikesDislikesForPost(
         postId,
         userId,
