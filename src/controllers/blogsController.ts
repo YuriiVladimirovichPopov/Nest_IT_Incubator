@@ -56,9 +56,7 @@ export class BlogsController {
     const blogWithPosts = await this.blogService.findBlogById(
       req.params.blogId,
     );
-    if (!blogWithPosts) {
-      return res.sendStatus(httpStatuses.NOT_FOUND_404);
-    }
+    if (!blogWithPosts) throw new NotFoundException()
     const pagination = new PaginatedType(req.query);
 
     const foundBlogWithAllPosts: Paginated<PostsViewModel> =
@@ -71,10 +69,12 @@ export class BlogsController {
     return foundBlogWithAllPosts;
   }
 
-  @Post('/:id/posts')
+  @Post()
   @HttpCode(201)
-  async createPostForBlogById(req: Request, res: Response) {
-    const blogId = req.params.blogId;
+  async createPostForBlogById(
+    @Param('blogId') blogId: string,
+  ) {
+    //const blogId = req.params.blogId;
 
     const {
       id,
@@ -100,19 +100,17 @@ export class BlogsController {
 
     if (!newPostForBlogById) throw new NotFoundException()
       return newPostForBlogById;
-    
-   
   }
-  //вроде сделал NOT WORKING!!!! fuck
-  @Get('/:id')
+  //WORKING!!!!
+  @Get()
   @HttpCode(200)
   async getBlogById(@Param('id') blogId: string): Promise<BlogViewModel> {
     const foundBlog = await this.blogService.findBlogById(blogId);
     if (!foundBlog) throw new NotFoundException();
     return foundBlog;
   }
-
-  @Put('/:id')
+//TODO: need do it
+  @Put()
   @HttpCode(204)
   async updateBlogById(
     req: Request<getByIdParam, BlogCreateModel>,
@@ -124,10 +122,10 @@ export class BlogsController {
     );
     if (!updateBlog) return new NotFoundException();
 
-    return res.sendStatus(httpStatuses.NO_CONTENT_204);
+    return updateBlog; // TODO может не надо updateBlog
   }
   // вроде сделал. It is WORKING
-  @Delete('/:id')
+  @Delete()
   @HttpCode(204)
   async deleteBlogById(@Param('id') blogId: string) {
     const foundBlog = await this.blogService.deleteBlog(blogId);

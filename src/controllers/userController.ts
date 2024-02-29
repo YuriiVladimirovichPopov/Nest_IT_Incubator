@@ -24,8 +24,8 @@ export class UserController {
     private usersRepository: UsersRepository,
     private authService: AuthService,
   ) {}
-
-  @Get('/')
+//TODO: need do it
+  @Get()
   @HttpCode(200)
   async getAllUsers(req: Request, res: Response) {
     const pagination = getUsersPagination(
@@ -37,12 +37,12 @@ export class UserController {
     return allUsers;
   }
   // вроде правильно сделал
-  @Post('/')
+  @Post()
   @HttpCode(201)
   async createNewUser(@Body() inputModel: UserInputModel) {
     const newUser = await this.authService.createUser(
       inputModel.login,
-      inputModel.email, //TODO запихнуть inputModel в обьект
+      inputModel.email, 
       inputModel.password,
     );
     if (!newUser) {
@@ -51,7 +51,7 @@ export class UserController {
     return newUser;
   }
 
-  @Delete('/:id')
+  @Delete()
   @HttpCode(204)
   async deleteUserById(req: RequestWithParams<getByIdParam>, res: Response) {
     const foundUser = await this.usersRepository.deleteUserById(req.params.id);
