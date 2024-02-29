@@ -21,6 +21,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { Paginated, PaginatedType } from 'src/pagination';
+import { PostCreateModel } from 'src/models/posts/postsInputModel';
+import { PostCreateForBlogDTO } from 'src/models/posts/postCreateDTO';
 
 @Controller('blogs')
 export class BlogsController {
@@ -73,10 +75,11 @@ export class BlogsController {
   @HttpCode(201)
   async createPostForBlogById(
     @Param('blogId') blogId: string,
-  ) {
+    @Body() createPostForBlog: PostCreateForBlogDTO
+    ) {
     //const blogId = req.params.blogId;
 
-    const {
+   /*  const {
       id,
       title,
       shortDescription,
@@ -84,19 +87,10 @@ export class BlogsController {
       blogName,
       createdAt,
       extendedLikesInfo,
-    } = req.body;
+    } = req.body; */
 
     const newPostForBlogById: PostsViewModel | null =
-      await this.postsRepository.createdPostForSpecificBlog({
-        id,
-        title,
-        shortDescription,
-        content,
-        blogId,
-        blogName,
-        createdAt,
-        extendedLikesInfo,
-      });
+      await this.postsRepository.createdPostForSpecificBlog(createPostForBlog);
 
     if (!newPostForBlogById) throw new NotFoundException()
       return newPostForBlogById;

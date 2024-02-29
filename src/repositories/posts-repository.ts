@@ -17,13 +17,14 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class PostsRepository {
-  private queryBlogsRepository: QueryBlogsRepository;
+  
   constructor(
     @InjectModel(Post.name)
     private readonly PostModel: Model<PostDocument>,
     @InjectModel(Reaction.name)
     private readonly ReactionModel: Model<ReactionDocument>,
     //private readonly ExtendedReactionForPostModel: Model<ExtendedReactionForPostDocument>,
+    private queryBlogsRepository: QueryBlogsRepository
   ) {}
 
   private postMapper(
@@ -55,39 +56,6 @@ export class PostsRepository {
     };
   }
 
-  async createdPostForSpecificBlog1(
-    newPost: PostsViewModel,
-  ): Promise<PostsViewModel | null> {
-    const blog = await this.queryBlogsRepository.findBlogById(newPost.blogId);
-    if (!blog) {
-      return null;
-    }
-
-    const createPostForBlog: PostsMongoDb = {
-      _id: new ObjectId(),
-      title: newPost.title,
-      shortDescription: newPost.shortDescription,
-      content: newPost.content,
-      blogId: newPost.blogId,
-      blogName: blog.name,
-      createdAt: new Date().toISOString(),
-      extendedLikesInfo: {
-        likesCount: newPost.extendedLikesInfo?.likesCount || 0,
-        dislikesCount: newPost.extendedLikesInfo?.dislikesCount || 0,
-        newestLikes: newPost.extendedLikesInfo?.newestLikes || [],
-      },
-    };
-
-    try {
-      const createdPost = await this.PostModel.create(createPostForBlog);
-
-      return this.postMapper(createdPost, null);
-    } catch (error) {
-      console.error('Error creating post:', error);
-      return null;
-    }
-  }
-
   async createdPostForSpecificBlog(
     newPost: PostsViewModel,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -95,11 +63,12 @@ export class PostsRepository {
   ): Promise<PostsViewModel | null> {
     try {
       // Находим блог по id нового поста
+    
       const blog = await this.queryBlogsRepository.findBlogById(newPost.blogId);
       if (!blog) {
         return null;
       }
-
+      
       // Создаем объект поста для базы данных
       const createPostForBlog: PostsMongoDb = {
         _id: new ObjectId(),
@@ -115,15 +84,12 @@ export class PostsRepository {
           newestLikes: [], // Пустой массив, так как новый пост не имеет лайков
         },
       };
-
       // Создаем новый пост
       const createdPost = await this.PostModel.create(createPostForBlog);
 
-      // Создаем реакции для нового поста
-
       // Преобразуем созданный пост и реакции в формат PostsViewModel
       const postsViewModel = this.postMapper(createdPost, null);
-
+       
       return postsViewModel;
     } catch (error) {
       console.error('Error creating post:', error);
