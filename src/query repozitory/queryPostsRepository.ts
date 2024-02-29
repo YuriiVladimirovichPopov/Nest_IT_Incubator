@@ -75,12 +75,20 @@ export class QueryPostRepository {
     userId?: string,
   ): Promise<Paginated<PostsViewModel>> {
     try {
+      // const sort: any = {};
+      // if (pagination.sortBy && pagination.sortDirection) {
+      //   sort[pagination.sortBy] = pagination.sortDirection;
+      // } else {
+      //   sort['createdAt'] = 'desc'; // Задайте значения по умолчанию, если они не определены
+      // }
+     
+      
       const result: WithId<PostsMongoDb>[] = await this.PostModel.find(filter)
         .sort({ [pagination.sortBy]: pagination.sortDirection })
         .skip(pagination.skip)
         .limit(pagination.pageSize)
         .lean();
-
+        //console.log('result: ' + result);
       const totalCount: number = await this.PostModel.countDocuments(filter);
       const pageCount: number = Math.ceil(totalCount / pagination.pageSize);
 
@@ -96,10 +104,12 @@ export class QueryPostRepository {
 
           myStatus = reaction ? reaction.myStatus : ReactionStatusEnum.None;
         }
-
+       
         const res = this._postMapper(post, myStatus);
+        console.log('res: ', res);
         items.push(res);
       }
+
 
       return {
         pagesCount: pageCount,

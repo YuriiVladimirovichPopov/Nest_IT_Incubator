@@ -90,7 +90,7 @@ export class BlogsController {
     } = req.body; */
 
     const newPostForBlogById: PostsViewModel | null =
-      await this.postsRepository.createdPostForSpecificBlog(createPostForBlog);
+      await this.postsRepository.createdPostForSpecificBlog({...createPostForBlog, blogId});
 
     if (!newPostForBlogById) throw new NotFoundException()
       return newPostForBlogById;

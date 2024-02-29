@@ -53,25 +53,31 @@ export class PostsMongoDb {
     this.createdAt = createdAt;
     this.extendedLikesInfo = extendedLikesInfo;
   }
-  static getViewModel(
+  static postMapper(
     post: PostsMongoDb,
-    postReaction: ExtendedReactionInfoViewModelForPost,
+    postReaction: ExtendedReactionInfoViewModelForPost | null,
   ): PostsViewModel {
+    if (!postReaction) {
+      postReaction = {
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: ReactionStatusEnum.None,
+        newestLikes: [],
+      };
+    }
     return {
       id: post._id.toString(),
       title: post.title,
       shortDescription: post.shortDescription,
       content: post.content,
       blogId: post.blogId,
-      blogName: post.blogName,
+      blogName: post.blogName || null,
       createdAt: post.createdAt,
       extendedLikesInfo: {
-        likesCount: post.extendedLikesInfo.likesCount,
-        dislikesCount: post.extendedLikesInfo.dislikesCount,
-        myStatus: postReaction
-          ? postReaction.myStatus
-          : ReactionStatusEnum.None,
-        newestLikes: postReaction?.newestLikes,
+        likesCount: postReaction.likesCount,
+        dislikesCount: postReaction.dislikesCount,
+        myStatus: postReaction.myStatus || ReactionStatusEnum.None,
+        newestLikes: postReaction.newestLikes,
       },
     };
   }

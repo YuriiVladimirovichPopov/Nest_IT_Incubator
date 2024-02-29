@@ -11,13 +11,14 @@ import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 import { httpStatuses } from 'src/send-status';
 import { RequestWithParams, UsersMongoDbType } from '../types';
 import { PostsRepository } from '../repositories/posts-repository';
-import { Controller, Delete, Get, HttpCode, NotFoundException, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, InternalServerErrorException, NotFoundException, Post, Put, Query } from '@nestjs/common';
 import {
   Paginated,
   PaginatedType,
   getPaginationFromQuery,
 } from 'src/pagination';
 import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
+import { User } from 'src/domain/schemas/users.schema';
 
 @Controller('posts')
 export class PostController {
@@ -92,40 +93,58 @@ export class PostController {
   }
 
   @Get('/')
-  async getAllPosts(req: Request, res: Response<Paginated<PostsViewModel>>) {
-    const pagination = getPaginationFromQuery(
-      req.query as unknown as PaginatedType, // TODO bad solution
-    );
+  @HttpCode(200)
+  async getAllPosts(
+    @Query() pagination: PaginatedType,
+    @Body() user: string
+    ): Promise<Paginated<PostsViewModel>>{
+    // const pagination = getPaginationFromQuery(
+    //   req.query as unknown as PaginatedType, // TODO bad solution
+    // );
 
     const allPosts: Paginated<PostsViewModel> =
       await this.queryPostRepository.findAllPosts(
         pagination,
-        req.body.user?._id.toString(),
+        user?._id.toString(),
       );
-    if (!allPosts) {
-      return res.status(httpStatuses.NOT_FOUND_404);
+    if (!allPosts) throw new NotFoundException()
+    return allPosts;
+  }
+  //WORKING
+  @Post()
+  @HttpCode(201)
+  async createPostByBlogId(@Body() data: PostsViewModel): Promise<PostsViewModel> {
+    const findBlogById = await this.queryBlogsRepository.findBlogById(data.blogId);
+
+    if (!findBlogById) {
+      throw new BadRequestException('Blog not found');
     }
-    res.status(httpStatuses.OK_200).send(allPosts);
+
+    const newPost: PostsViewModel | null = await this.postsRepository.createdPostForSpecificBlog(data);
+
+    if (!newPost) {
+      throw new InternalServerErrorException('Failed to create post');
+    }
+
+    return newPost;
   }
 
-  @Post('/')
-  async createPostByBlogId(req: Request, res: Response<PostsViewModel | null>) {
-    const findBlogById = await this.queryBlogsRepository.findBlogById(
-      req.body.blogId,
-    );
+  /* async createPostByBlogId(
+    @Body() blogId: string, 
+    @Body() data: PostsViewModel
+    ): Promise<PostsViewModel> {
+    const findBlogById = await this.queryBlogsRepository.findBlogById(blogId);
 
-    if (findBlogById) {
-      const data: PostsViewModel = req.body;
-
+    if (!findBlogById) throw new BadRequestException('Blog not found');
       const newPost: PostsViewModel | null =
         await this.postsRepository.createdPostForSpecificBlog(data);
 
-      if (!newPost) {
-        return res.sendStatus(httpStatuses.BAD_REQUEST_400);
-      }
-      return res.status(httpStatuses.CREATED_201).send(newPost);
-    }
-  }
+      if (!newPost) throw new BadRequestException()
+      return newPost;
+    
+  } */
+
+
 
   @Get('/posts/:id')
   async getPostById(req: Request, res: Response) {

@@ -27,7 +27,7 @@ export class PostsRepository {
     private queryBlogsRepository: QueryBlogsRepository
   ) {}
 
-  private postMapper(
+  /* private postMapper(
     post: PostsMongoDb,
     postReaction: ExtendedReactionInfoViewModelForPost | null,
   ): PostsViewModel {
@@ -54,8 +54,8 @@ export class PostsRepository {
         newestLikes: postReaction.newestLikes,
       },
     };
-  }
-
+  } */
+// унести в сервис
   async createdPostForSpecificBlog(
     newPost: PostsViewModel,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -88,7 +88,7 @@ export class PostsRepository {
       const createdPost = await this.PostModel.create(createPostForBlog);
 
       // Преобразуем созданный пост и реакции в формат PostsViewModel
-      const postsViewModel = this.postMapper(createdPost, null);
+      const postsViewModel = PostsMongoDb.postMapper(createdPost, null);
        
       return postsViewModel;
     } catch (error) {
