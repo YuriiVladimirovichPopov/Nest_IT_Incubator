@@ -1,6 +1,6 @@
 import { EmailConfirmationType } from '../../types';
 
-export type UserViewModel = {
+export class UserViewModel {
   id: string;
   login: string;
   email: string;

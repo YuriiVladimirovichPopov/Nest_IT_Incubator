@@ -19,6 +19,7 @@ import {
 } from 'src/pagination';
 import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
 import { User } from 'src/domain/schemas/users.schema';
+import { ObjectId } from 'mongoose';
 
 @Controller('posts')
 export class PostController {
@@ -33,6 +34,7 @@ export class PostController {
   ) {}
 
   @Get('/:id/comments')
+  @HttpCode(200)
   async getCommentsByPostId(
     req: Request,
     res: Response<Paginated<CommentViewModel>>,
@@ -57,7 +59,7 @@ export class PostController {
         user?._id.toString(),
       );
 
-    return res.status(httpStatuses.OK_200).send(allCommentsForPostId);
+    return allCommentsForPostId;
   }
   @Post('/:postId/comments') // TODO тут доделать путь
   async createCommentsByPostId(req: Request, res: Response) {
@@ -95,17 +97,17 @@ export class PostController {
   @Get('/')
   @HttpCode(200)
   async getAllPosts(
-    @Query() pagination: PaginatedType,
-    @Body() user: string
+    @Query() query,// pagination: PaginatedType,
+    @Body() user: User
     ): Promise<Paginated<PostsViewModel>>{
-    // const pagination = getPaginationFromQuery(
+    const pagination = getPaginationFromQuery(query)
     //   req.query as unknown as PaginatedType, // TODO bad solution
     // );
 
     const allPosts: Paginated<PostsViewModel> =
       await this.queryPostRepository.findAllPosts(
         pagination,
-        user?._id.toString(),
+        user?._id?.toString(),
       );
     if (!allPosts) throw new NotFoundException()
     return allPosts;

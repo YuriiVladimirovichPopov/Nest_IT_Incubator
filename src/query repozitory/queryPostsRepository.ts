@@ -75,7 +75,7 @@ export class QueryPostRepository {
     userId?: string,
   ): Promise<Paginated<PostsViewModel>> {
     try {
-      const result: WithId<PostsMongoDb>[] = await this.PostModel.find(filter)
+      const result: WithId<PostDocument>[] = await this.PostModel.find(filter) // TODO: be <PostsMongoDB>
         .sort({ [pagination.sortBy]: pagination.sortDirection })
         .skip(pagination.skip)
         .limit(pagination.pageSize)
@@ -97,7 +97,7 @@ export class QueryPostRepository {
         }
        
         const res = this._postMapper(post, myStatus);
-        console.log('res: ', res);
+        
         items.push(res);
       }
 

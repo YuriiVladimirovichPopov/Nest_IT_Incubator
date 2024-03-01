@@ -20,8 +20,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { Paginated, PaginatedType } from 'src/pagination';
-import { PostCreateModel } from 'src/models/posts/postsInputModel';
+import { Paginated, PaginatedType, getPaginationFromQuery } from 'src/pagination';
 import { PostCreateForBlogDTO } from 'src/models/posts/postCreateDTO';
 
 @Controller('blogs')
@@ -31,13 +30,14 @@ export class BlogsController {
     private postsRepository: PostsRepository,
     private queryPostRepository: QueryPostRepository,
   ) {}
-  // NOT WORKING
+  // WORKING 
   @Get()
   @HttpCode(200)
   async getAllBlogs(
-    @Query() queryBlogs: PaginatedType,
+    @Query() query: PaginatedType//queryBlogs: PaginatedType,
   ): Promise<Paginated<BlogViewModel>> {
-    return this.blogService.findAllBlogs(queryBlogs);
+    const pagination = getPaginationFromQuery(query);
+    return this.blogService.findAllBlogs(pagination);
   }
   //it is WORKING
   @Post()
@@ -48,33 +48,33 @@ export class BlogsController {
     const result = await this.blogService.createBlog(createModel);
     return result;
   }
-
+  //it is WORKING
   @Get('/:id/posts')
   @HttpCode(200)
   async getPostByBlogId(
-    req: Request<{ blogId: string }, { user: UserViewModel }>,
-    res: Response,
+    @Query() query,
+    @Param('id') blogId: string,
+    @Body() user: UserViewModel
   ) {
-    const blogWithPosts = await this.blogService.findBlogById(
-      req.params.blogId,
-    );
+    const blogWithPosts = await this.blogService.findBlogById(blogId);
+
     if (!blogWithPosts) throw new NotFoundException()
-    const pagination = new PaginatedType(req.query);
+    const pagination = new PaginatedType(query);
 
     const foundBlogWithAllPosts: Paginated<PostsViewModel> =
       await this.queryPostRepository.findAllPostsByBlogId(
-        req.params.blogId,
+        blogId,
         pagination,
-        req.body.user.id.toString(),
+        user?.id?.toString(),
       );
 
     return foundBlogWithAllPosts;
   }
-
-  @Post()
+  //it is working
+  @Post('/:id/posts')
   @HttpCode(201)
   async createPostForBlogById(
-    @Param('blogId') blogId: string,
+    @Param('id') blogId: string,
     @Body() createPostForBlog: PostCreateForBlogDTO
     ) {
     //const blogId = req.params.blogId;
@@ -96,30 +96,31 @@ export class BlogsController {
       return newPostForBlogById;
   }
   //WORKING!!!!
-  @Get()
+  @Get('/:id')
   @HttpCode(200)
   async getBlogById(@Param('id') blogId: string): Promise<BlogViewModel> {
     const foundBlog = await this.blogService.findBlogById(blogId);
     if (!foundBlog) throw new NotFoundException();
     return foundBlog;
   }
-//TODO: need do it
-  @Put()
+//it is WORKING!!!!
+  @Put('/:id')
   @HttpCode(204)
   async updateBlogById(
-    req: Request<getByIdParam, BlogCreateModel>,
-    res: Response<BlogViewModel>,
+    @Param('id') id: string,
+    @Body() blog: BlogCreateModel
+    
   ) {
     const updateBlog = await this.blogService.updateBlog(
-      req.params.id,
-      req.body,
+      id,
+      blog,
     );
     if (!updateBlog) return new NotFoundException();
 
     return updateBlog; // TODO может не надо updateBlog
   }
-  // вроде сделал. It is WORKING
-  @Delete()
+  //it is WORKING
+  @Delete('/:id')
   @HttpCode(204)
   async deleteBlogById(@Param('id') blogId: string) {
     const foundBlog = await this.blogService.deleteBlog(blogId);

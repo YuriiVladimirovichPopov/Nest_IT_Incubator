@@ -56,8 +56,6 @@ export class User {
   @Prop({
     required: true,
     type: String,
-    minLength: passwordValid.minLength,
-    maxLength: passwordValid.maxLength,
   })
   passwordHash: string;
 
