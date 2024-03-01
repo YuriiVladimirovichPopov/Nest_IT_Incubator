@@ -1,9 +1,6 @@
-import { Response, Request, query } from 'express';
-import { getByIdParam } from '../models/getById';
 import { UserViewModel } from '../models/users/userViewModel';
 import { UsersRepository } from '../repositories/users-repository';
-import { httpStatuses } from 'src/send-status';
-import { RequestWithParams } from '../types';
+
 import {
   Body,
   Controller,
@@ -16,7 +13,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from 'src/application/auth-service';
-import { Paginated, PaginatedType, getUsersPagination } from 'src/pagination';
+import { Paginated, getUsersPagination } from 'src/pagination';
 import { UserInputModel } from 'src/models/users/userInputModel';
 import { Query } from '@nestjs/common';
 
@@ -26,21 +23,20 @@ export class UserController {
     private usersRepository: UsersRepository,
     private authService: AuthService,
   ) {}
-//TODO: need do it
+
   @Get()
   @HttpCode(200)
   async getAllUsers(
-    @Query() query //pagination: PaginatedType Nadya
+    @Query() query//: ParsedQs
     ): Promise<Paginated<UserViewModel>>{
-    const pagination = getUsersPagination(query); //Nadya
-    //   req.query as unknown as PaginatedType, // TODO bad solution
-    // );
+    const pagination = getUsersPagination(query); 
+    
     const allUsers: Paginated<UserViewModel> =
       await this.usersRepository.findAllUsers(pagination);
 
     return allUsers;
   }
-  // WORKING
+  
   @Post()
   @HttpCode(201)
   async createNewUser(@Body() inputModel: UserInputModel) {

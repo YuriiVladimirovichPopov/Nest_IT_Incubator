@@ -1,3 +1,4 @@
+import { ParsedQs } from 'qs';
 import { Response, Request } from 'express';
 import { BlogService } from '../application/blog-service';
 import { BlogCreateModel } from '../models/blogs/blogsInputModel';
@@ -30,16 +31,16 @@ export class BlogsController {
     private postsRepository: PostsRepository,
     private queryPostRepository: QueryPostRepository,
   ) {}
-  // WORKING 
+  
   @Get()
   @HttpCode(200)
   async getAllBlogs(
-    @Query() query: PaginatedType//queryBlogs: PaginatedType,
+    @Query() query: PaginatedType
   ): Promise<Paginated<BlogViewModel>> {
     const pagination = getPaginationFromQuery(query);
     return this.blogService.findAllBlogs(pagination);
   }
-  //it is WORKING
+  
   @Post()
   @HttpCode(201)
   async createBlogs(
@@ -48,18 +49,18 @@ export class BlogsController {
     const result = await this.blogService.createBlog(createModel);
     return result;
   }
-  //it is WORKING
+  
   @Get('/:id/posts')
   @HttpCode(200)
   async getPostByBlogId(
-    @Query() query,
+    @Query() query: ParsedQs, //добавил ParsedQs
     @Param('id') blogId: string,
     @Body() user: UserViewModel
   ) {
     const blogWithPosts = await this.blogService.findBlogById(blogId);
 
-    if (!blogWithPosts) throw new NotFoundException()
-    const pagination = new PaginatedType(query);
+    if (!blogWithPosts) throw new NotFoundException({ message: 'blog with posts not found' })
+    const pagination = new PaginatedType(query); //query
 
     const foundBlogWithAllPosts: Paginated<PostsViewModel> =
       await this.queryPostRepository.findAllPostsByBlogId(
@@ -70,40 +71,31 @@ export class BlogsController {
 
     return foundBlogWithAllPosts;
   }
-  //it is working
+  
   @Post('/:id/posts')
   @HttpCode(201)
   async createPostForBlogById(
     @Param('id') blogId: string,
     @Body() createPostForBlog: PostCreateForBlogDTO
     ) {
-    //const blogId = req.params.blogId;
-
-   /*  const {
-      id,
-      title,
-      shortDescription,
-      content,
-      blogName,
-      createdAt,
-      extendedLikesInfo,
-    } = req.body; */
 
     const newPostForBlogById: PostsViewModel | null =
       await this.postsRepository.createdPostForSpecificBlog({...createPostForBlog, blogId});
 
-    if (!newPostForBlogById) throw new NotFoundException()
+    if (!newPostForBlogById) throw new NotFoundException({ message: 'posts not found' })
       return newPostForBlogById;
   }
-  //WORKING!!!!
+  
   @Get('/:id')
   @HttpCode(200)
-  async getBlogById(@Param('id') blogId: string): Promise<BlogViewModel> {
-    const foundBlog = await this.blogService.findBlogById(blogId);
-    if (!foundBlog) throw new NotFoundException();
+  async getBlogById(
+    @Param('id') id: string  
+    ): Promise<BlogViewModel> {
+    const foundBlog = await this.blogService.findBlogById(id); 
+    if (!foundBlog) throw new NotFoundException({ message: 'blog not found' });
     return foundBlog;
   }
-//it is WORKING!!!!
+
   @Put('/:id')
   @HttpCode(204)
   async updateBlogById(
@@ -115,18 +107,17 @@ export class BlogsController {
       id,
       blog,
     );
-    if (!updateBlog) return new NotFoundException();
+    if (!updateBlog) throw new NotFoundException({ message: 'blog not found' });
 
-    return updateBlog; // TODO может не надо updateBlog
+    return updateBlog; // TODO может не надо updateBlog 
   }
-  //it is WORKING
+   
   @Delete('/:id')
   @HttpCode(204)
-  async deleteBlogById(@Param('id') blogId: string) {
-    const foundBlog = await this.blogService.deleteBlog(blogId);
-    if (!foundBlog) {
-      return new NotFoundException();
-    }
-    return blogId;
+  async deleteBlogById(@Param('id') id: string) { 
+    const foundBlog = await this.blogService.deleteBlog(id); 
+    if (!foundBlog) throw new NotFoundException({ message: 'blog not found' });
+    
+    return id;
   }
 }

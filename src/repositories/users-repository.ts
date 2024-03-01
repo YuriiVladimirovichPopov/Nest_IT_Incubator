@@ -23,8 +23,8 @@ export class UsersRepository {
       login: user.login,
       email: user.email,
       createdAt: user.createdAt,
-      emailConfirmation: user.emailConfirmation,
-      recoveryCode: randomUUID(),
+      //emailConfirmation: user.emailConfirmation,
+      //recoveryCode: randomUUID(),
     };
   }
 
@@ -46,7 +46,7 @@ export class UsersRepository {
     }
 
     const result: UsersMongoDbType[] = await this.UserModel.find(filter, {
-      projection: { passwordHash: 0, passwordSalt: 0 },
+      projection: { passwordHash: 0, passwordSalt: 0, emailConfirmation: 0, recoveryCode: 0 }, // добавил emailConfirmation: 0, recoveryCode: 0
     })
 
       .sort({ [pagination.sortBy]: pagination.sortDirection })

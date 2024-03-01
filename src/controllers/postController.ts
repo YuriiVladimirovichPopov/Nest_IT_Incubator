@@ -7,7 +7,7 @@ import { PostsViewModel } from '../models/posts/postsViewModel';
 import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
 import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
 import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
-
+import {ParsedQs} from 'qs'
 import { httpStatuses } from 'src/send-status';
 import { RequestWithParams, UsersMongoDbType } from '../types';
 import { PostsRepository } from '../repositories/posts-repository';
@@ -36,17 +36,14 @@ export class PostController {
     private commentsQueryRepository: CommentsQueryRepository,
     private postsRepository: PostsRepository,
   ) {}
-    // may be WORKING
+   
   @Get('/:id/comments')
   @HttpCode(200)
   async getCommentsByPostId(
-    @Query() query,
+    @Query() query: ParsedQs, 
     @Param('id') postId: string,
     @Body() user: User
-    // req: Request,
-    // res: Response<Paginated<CommentViewModel>>,
   ) {
-    //const user = req.body.user as UsersMongoDbType | null;
 
     const foundedPostId = await this.queryPostRepository.findPostById(
       postId,
@@ -54,9 +51,7 @@ export class PostController {
     );
     if (!foundedPostId) throw new NotFoundException({ message: 'post not found' })
 
-    const pagination = new PaginatedType(query);
-    //getPaginationFromQuery(
-    //req.query as unknown as PaginatedType, 
+    const pagination = new PaginatedType(query); 
     
     const allCommentsForPostId: Paginated<CommentViewModel> =
       await this.commentsQueryRepository.getAllCommentsForPost(
@@ -67,7 +62,7 @@ export class PostController {
 
     return allCommentsForPostId;
   }
-  //it is WORKING
+  
   @Post('/:postId/comments')
   @HttpCode(201) 
   async createCommentsByPostId(
@@ -96,7 +91,7 @@ export class PostController {
       );
     return comment;
   }
-  //it is WORKING
+  
   @Get('/')
   @HttpCode(200)
   async getAllPosts(
@@ -113,7 +108,7 @@ export class PostController {
     if (!allPosts) throw new NotFoundException()
     return allPosts;
   }
-  //WORKING
+  
   @Post()
   @HttpCode(201)
   async createPostByBlogId(@Body() data: PostsViewModel): Promise<PostsViewModel> {
@@ -131,7 +126,7 @@ export class PostController {
 
     return newPost;
   }
-  //it is WORKING
+  
   @Get('/:id')
   @HttpCode(200)
   async getPostById(
@@ -146,19 +141,16 @@ export class PostController {
       return foundPost;
     
   }
-  //it is WORKING
+  
   @Put('/:id')
   @HttpCode(204)
   async updatePostById(
     @Param('id') id: string,
     @Body() post: PostCreateModel
-    // req: Request<getByIdParam, PostCreateModel>,
-    // res: Response<PostsViewModel>,
   ) {
     const updatePost = await this.postsService.updatePost(
       id,
       post
-      //req.body,
     );
 
     if (!updatePost) throw new NotFoundException({ message: 'post not found' })
@@ -172,7 +164,6 @@ export class PostController {
   async updateLikesDislikesForPost(
     @Param('postId') postId: string,
     @Body() reactionDto: ReactionUpdateDto
-    //req: Request, res: Response
     ) {
     try {
       //const postId = req.params.postId;
@@ -198,12 +189,9 @@ export class PostController {
       
     } catch (error) {
       console.error('Ошибка при обновлении реакций:', error);
-    //   return res
-    //     .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-    //     .send({ message: 'Сервер на кофе-брейке!' });
      }
    }
-   //it is WORKING
+
   @Delete('/:id')
   @HttpCode(204)
   async deletePostById(

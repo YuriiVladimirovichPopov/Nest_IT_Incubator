@@ -2,15 +2,11 @@ import { Response, Request } from 'express';
 import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
 import { CommentsRepository } from '../repositories/comments-repository';
 import { httpStatuses } from 'src/send-status';
-//import { parsePaginatedType } from 'src/pagination';
 import { CommentsService } from '../application/comment-service';
-//import { ReactionStatusEnum } from '../domain/schemas/reactionInfo.schema';
-import { UsersMongoDbType } from '../types';
 import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, NotFoundException, Param, Put, Req } from '@nestjs/common';
 import { PaginatedType } from 'src/pagination';
 import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
 import { User } from 'src/domain/schemas/users.schema';
-import { PostCreateModel } from 'src/models/posts/postsInputModel';
 
 @Controller('comments')
 export class CommentController {
@@ -25,10 +21,7 @@ export class CommentController {
   async getCommentById(
     @Param('commentId') commentId: string,
     @Body() user: User
-    //req: Request, res: Response
     ) {
-    //const user = req.body.user as UsersMongoDbType | null;
-
     const foundComment = await this.commentsQueryRepository.findCommentById(
       commentId,
       user?._id?.toString(),
@@ -38,7 +31,7 @@ export class CommentController {
       return foundComment;
     
   }
-// вроде сделал
+
   @Put('/:commentId')
   @HttpCode(204)
   async updateCommentById(
@@ -46,8 +39,7 @@ export class CommentController {
     @Body() content: string,
     @Req() user: User
   ) {
-    //const user = req.user!;
-    //const commentId = req.params.commentId;
+    
     const existingComment =
       await this.commentsQueryRepository.findCommentById(commentId);
     if (!existingComment) throw new NotFoundException({ message: 'comment not found' })
@@ -135,29 +127,26 @@ export class CommentController {
         .send({ message: 'Сервер на кофе-брейке!' });
     }
   }
-
+  
   @Delete('/:commentId')
+  @HttpCode(204)
   async deleteCommentById(
-    req: Request<{ commentId: string }, { user: string }>,
-    res: Response,
+    @Param('commentId') commentId: string,
+    @Req() user: User
   ) {
-    const user = req.user!;
-    const commentId = req.params.commentId;
 
     const comment =
       await this.commentsQueryRepository.findCommentById(commentId);
-    if (!comment) {
-      return res.sendStatus(httpStatuses.NOT_FOUND_404);
-    }
+    if (!comment) throw new NotFoundException({ message: 'comment not found' })
+
     const commentUserId = comment.commentatorInfo.userId;
-    if (commentUserId !== user.id.toString()) {
-      return res.sendStatus(httpStatuses.FORBIDDEN_403);
+    if (commentUserId !== user._id.toString()) { 
+      throw new ForbiddenException({ message: 'You do not have permission to access this resource' });
     }
     const commentDelete = await this.commentsRepository.deleteComment(
-      req.params.commentId,
+      commentId,
     );
-    if (commentDelete) {
-      return res.sendStatus(httpStatuses.NO_CONTENT_204);
-    }
+      return commentDelete
+    
   }
 }
