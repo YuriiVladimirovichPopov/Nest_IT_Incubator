@@ -11,7 +11,7 @@ import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 import { httpStatuses } from 'src/send-status';
 import { RequestWithParams, UsersMongoDbType } from '../types';
 import { PostsRepository } from '../repositories/posts-repository';
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, InternalServerErrorException, NotFoundException, Post, Put, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, InternalServerErrorException, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
 import {
   Paginated,
   PaginatedType,
@@ -19,90 +19,91 @@ import {
 } from 'src/pagination';
 import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
 import { User } from 'src/domain/schemas/users.schema';
-import { ObjectId } from 'mongoose';
+import { QueryUserRepository } from 'src/query repozitory/queryUserRepository';
+import { CommentsRepository } from 'src/repositories/comments-repository';
+import { CreateCommentDto } from 'src/models/comments/createCommentDto';
+import { ReactionUpdateDto } from 'src/models/reaction/reactionDto';
 
 @Controller('posts')
 export class PostController {
-  queryUserRepository: any;
-  commentsRepository: any;
+  
   constructor(
+    private queryUserRepository: QueryUserRepository,
+    private commentsRepository: CommentsRepository,
     private postsService: PostsService,
     private queryBlogsRepository: QueryBlogsRepository,
     private queryPostRepository: QueryPostRepository,
     private commentsQueryRepository: CommentsQueryRepository,
     private postsRepository: PostsRepository,
   ) {}
-
+    // may be WORKING
   @Get('/:id/comments')
   @HttpCode(200)
   async getCommentsByPostId(
-    req: Request,
-    res: Response<Paginated<CommentViewModel>>,
+    @Query() query,
+    @Param('id') postId: string,
+    @Body() user: User
+    // req: Request,
+    // res: Response<Paginated<CommentViewModel>>,
   ) {
-    const user = req.body.user as UsersMongoDbType | null;
+    //const user = req.body.user as UsersMongoDbType | null;
 
     const foundedPostId = await this.queryPostRepository.findPostById(
-      req.params.postId,
-      req.body.userId,
+      postId,
+      user._id?.toString(),  // TODO: будет ли работать?
     );
-    if (!foundedPostId) {
-      return res.sendStatus(httpStatuses.NOT_FOUND_404);
-    }
+    if (!foundedPostId) throw new NotFoundException({ message: 'post not found' })
 
-    const pagination: PaginatedType = getPaginationFromQuery(
-      req.query as unknown as PaginatedType, // TODO bad solution
-    );
+    const pagination = new PaginatedType(query);
+    //getPaginationFromQuery(
+    //req.query as unknown as PaginatedType, 
+    
     const allCommentsForPostId: Paginated<CommentViewModel> =
       await this.commentsQueryRepository.getAllCommentsForPost(
-        req.params.postId,
+        postId,
         pagination,
-        user?._id.toString(),
+        user?._id?.toString(),
       );
 
     return allCommentsForPostId;
   }
-  @Post('/:postId/comments') // TODO тут доделать путь
-  async createCommentsByPostId(req: Request, res: Response) {
+  //it is WORKING
+  @Post('/:postId/comments')
+  @HttpCode(201) 
+  async createCommentsByPostId(
+    @Param('postId') postId: string,
+    @Body() createCommentDto: CreateCommentDto,
+  ) {
     const postWithId: PostsViewModel | null =
       await this.queryPostRepository.findPostById(
-        req.params.postId,
-        req.body.userId,
+        postId,
+        createCommentDto.userId,
       );
-    if (!postWithId) {
-      return res
-        .status(httpStatuses.NOT_FOUND_404)
-        .send({ message: 'post not found' });
-    }
+    if (!postWithId) throw new NotFoundException({ message: 'post not found' })
 
-    const userLogin = await this.queryUserRepository.findLoginById(
-      req.body.userId,
-    );
-    if (!userLogin) {
-      return res.status(httpStatuses.NOT_FOUND_404).send('User not found');
-    }
+    const userLogin = await this.queryUserRepository.findLoginById(createCommentDto.userId);
+    if (!userLogin) throw new NotFoundException({ message: 'user not found' })
 
     const comment: CommentViewModel | null =
       await this.commentsRepository.createComment(
-        req.body.parentId,
+        createCommentDto.parentId,
         postWithId.id,
-        req.body.content,
+        createCommentDto.content,
         {
-          userId: req.body.userId,
+          userId: createCommentDto.userId,
           userLogin,
         },
       );
-    return res.status(httpStatuses.CREATED_201).send(comment);
+    return comment;
   }
-
+  //it is WORKING
   @Get('/')
   @HttpCode(200)
   async getAllPosts(
-    @Query() query,// pagination: PaginatedType,
+    @Query() query,
     @Body() user: User
     ): Promise<Paginated<PostsViewModel>>{
     const pagination = getPaginationFromQuery(query)
-    //   req.query as unknown as PaginatedType, // TODO bad solution
-    // );
 
     const allPosts: Paginated<PostsViewModel> =
       await this.queryPostRepository.findAllPosts(
@@ -130,62 +131,64 @@ export class PostController {
 
     return newPost;
   }
-
-  @Get('/posts/:id')
-  async getPostById(req: Request, res: Response) {
+  //it is WORKING
+  @Get('/:id')
+  @HttpCode(200)
+  async getPostById(
+    @Param('id') id: string,
+    @Body() user: User
+  ) {
     const foundPost = await this.postsService.findPostById(
-      req.params.id,
-      req.body.user?._id.toString(),
+      id,
+     user?._id?.toString(),
     );
-    if (!foundPost) {
-      res.sendStatus(httpStatuses.NOT_FOUND_404);
-    } else {
-      res.status(httpStatuses.OK_200).send(foundPost);
-    }
+    if (!foundPost) throw new NotFoundException({ message: 'post not found' })
+      return foundPost;
+    
   }
-
+  //it is WORKING
   @Put('/:id')
+  @HttpCode(204)
   async updatePostById(
-    req: Request<getByIdParam, PostCreateModel>,
-    res: Response<PostsViewModel>,
+    @Param('id') id: string,
+    @Body() post: PostCreateModel
+    // req: Request<getByIdParam, PostCreateModel>,
+    // res: Response<PostsViewModel>,
   ) {
     const updatePost = await this.postsService.updatePost(
-      req.params.id,
-      req.body,
+      id,
+      post
+      //req.body,
     );
 
-    if (!updatePost) {
-      return res.sendStatus(httpStatuses.NOT_FOUND_404);
-    } else {
-      res.sendStatus(httpStatuses.NO_CONTENT_204);
-    }
+    if (!updatePost) throw new NotFoundException({ message: 'post not found' })
+    return updatePost;
+    
   }
 
+  // не уверен что работает
   @Put('/:postId/like-status')
   @HttpCode(204)
-  async updateLikesDislikesForPost(req: Request, res: Response) {
+  async updateLikesDislikesForPost(
+    @Param('postId') postId: string,
+    @Body() reactionDto: ReactionUpdateDto
+    //req: Request, res: Response
+    ) {
     try {
-      const postId = req.params.postId;
-      const userId = req.body.userId!;
-      const likeStatus = req.body.likeStatus;
+      //const postId = req.params.postId;
+      //const userId = req.body.userId!;
+      const likeStatus = reactionDto.likeStatus;
 
       // Проверяем наличие поля likeStatus в теле запроса
       if (
         likeStatus !== ReactionStatusEnum.Like &&
         likeStatus !== ReactionStatusEnum.Dislike &&
         likeStatus !== ReactionStatusEnum.None
-      ) {
-        return res.status(httpStatuses.BAD_REQUEST_400).send({
-          errorsMessages: [
-            { message: 'Like status is required', field: 'likeStatus' },
-          ],
-        });
-      }
-
-
+      ) throw new BadRequestException({ message: 'Like status is required', field: 'likeStatus' })
+      
       const updatedPost = await this.postsService.updateLikesDislikesForPost(
         postId,
-        userId,
+        reactionDto.userId,
         likeStatus,
       );
 
@@ -195,18 +198,20 @@ export class PostController {
       
     } catch (error) {
       console.error('Ошибка при обновлении реакций:', error);
-      return res
-        .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: 'Сервер на кофе-брейке!' });
-    }
-  }
-
+    //   return res
+    //     .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
+    //     .send({ message: 'Сервер на кофе-брейке!' });
+     }
+   }
+   //it is WORKING
   @Delete('/:id')
-  async deletePostById(req: RequestWithParams<getByIdParam>, res: Response) {
-    const foundPost = await this.postsService.deletePost(req.params.id);
-    if (!foundPost) {
-      return res.sendStatus(httpStatuses.NOT_FOUND_404);
-    }
-    return res.sendStatus(httpStatuses.NO_CONTENT_204);
+  @HttpCode(204)
+  async deletePostById(
+    @Param('id') id: string
+    ) {
+    const foundPost = await this.postsService.deletePost(id);
+    if (!foundPost) throw new NotFoundException({ message: 'Post not found' })
+    
+    return foundPost;
   }
 }

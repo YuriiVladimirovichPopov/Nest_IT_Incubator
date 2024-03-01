@@ -6,9 +6,11 @@ import { httpStatuses } from 'src/send-status';
 import { CommentsService } from '../application/comment-service';
 //import { ReactionStatusEnum } from '../domain/schemas/reactionInfo.schema';
 import { UsersMongoDbType } from '../types';
-import { Controller, Delete, Get, Put } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, NotFoundException, Param, Put, Req } from '@nestjs/common';
 import { PaginatedType } from 'src/pagination';
 import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
+import { User } from 'src/domain/schemas/users.schema';
+import { PostCreateModel } from 'src/models/posts/postsInputModel';
 
 @Controller('comments')
 export class CommentController {
@@ -19,42 +21,46 @@ export class CommentController {
   ) {}
 
   @Get('/:commentId')
-  async getCommentById(req: Request, res: Response) {
-    const user = req.body.user as UsersMongoDbType | null;
+  @HttpCode(200)
+  async getCommentById(
+    @Param('commentId') commentId: string,
+    @Body() user: User
+    //req: Request, res: Response
+    ) {
+    //const user = req.body.user as UsersMongoDbType | null;
 
     const foundComment = await this.commentsQueryRepository.findCommentById(
-      req.params.commentId,
+      commentId,
       user?._id?.toString(),
     );
-    if (foundComment) {
-      return res.status(httpStatuses.OK_200).send(foundComment);
-    } else {
-      return res.sendStatus(httpStatuses.NOT_FOUND_404);
-    }
+    if (!foundComment) throw new NotFoundException({ message: 'comment not found' })
+    
+      return foundComment;
+    
   }
-
+// вроде сделал
   @Put('/:commentId')
-  async updateCommentById(req: Request, res: Response) {
-    const user = req.user!;
-    const commentId = req.params.commentId;
+  @HttpCode(204)
+  async updateCommentById(
+    @Param('commentId') commentId: string,
+    @Body() content: string,
+    @Req() user: User
+  ) {
+    //const user = req.user!;
+    //const commentId = req.params.commentId;
     const existingComment =
       await this.commentsQueryRepository.findCommentById(commentId);
-    if (!existingComment) {
-      return res.sendStatus(httpStatuses.NOT_FOUND_404);
-    }
+    if (!existingComment) throw new NotFoundException({ message: 'comment not found' })
 
-    if (existingComment.commentatorInfo.userId !== user.id.toString()) {
-      return res.sendStatus(httpStatuses.FORBIDDEN_403);
+    if (existingComment.commentatorInfo.userId !== user._id.toString()) {
+      throw new ForbiddenException({ message: 'You do not have permission to access this resource' });
     }
 
     const updateComment = await this.commentsRepository.updateComment(
       commentId,
-      req.body.content,
+      content,
     );
-
-    if (updateComment) {
-      return res.sendStatus(httpStatuses.NO_CONTENT_204);
-    }
+      return updateComment
   }
 
   @Get('/:commentId')
