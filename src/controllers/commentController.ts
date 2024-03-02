@@ -1,12 +1,14 @@
+import { ParsedQs } from 'qs';
 import { Response, Request } from 'express';
 import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
 import { CommentsRepository } from '../repositories/comments-repository';
 import { httpStatuses } from 'src/send-status';
 import { CommentsService } from '../application/comment-service';
-import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, NotFoundException, Param, Put, Req } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, InternalServerErrorException, NotFoundException, Param, Put, Query, Req } from '@nestjs/common';
 import { PaginatedType } from 'src/pagination';
 import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
 import { User } from 'src/domain/schemas/users.schema';
+import { ReactionUpdateDto } from 'src/models/reaction/reactionDto';
 
 @Controller('comments')
 export class CommentController {
@@ -54,77 +56,81 @@ export class CommentController {
     );
       return updateComment
   }
-
+//TODO: in process(may be finished)
   @Get('/:commentId')
-  async getCommentsByParentId(req: Request, res: Response) {
+  @HttpCode(200)
+  async getCommentsByParentId(
+    @Query() query: ParsedQs,
+    @Param('parentId') parentId: string,
+    @Body() userId: string,
+    ) {
     try {
-      const parentId = req.params.parentId;
-      const pagination = new PaginatedType(req.query);
-      const userId = req.params.userId;
-
+      const pagination = new PaginatedType(query);
       const paginatedComments =
         await this.commentsQueryRepository.findCommentsByParentId(
           parentId,
           pagination,
           userId,
         );
-      return res.status(httpStatuses.OK_200).send(paginatedComments);
+      return paginatedComments;
     } catch (error) {
-      return res
-        .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
     }
   }
-
+//TODO: in process(may be finished)
   @Put('/:commentId/like-status')
-  async updateLikesDislikes(req: Request, res: Response) {
+  @HttpCode(204)
+  async updateLikesDislikes(
+    @Param('commentId') commentId: string,
+    @Body() reactionUpdate: ReactionUpdateDto
+    //req: Request, res: Response
+    ) {
     try {
-      const commentId = req.params.commentId;
-      const userId = req.body.userId!;
-      const { likeStatus } = req.body;
+      //const commentId = req.params.commentId;
+      //const userId = req.body.userId!;
+      //const { likeStatus } = req.body;
 
       const updatedComment = await this.commentsService.updateLikesDislikes(
         commentId,
-        userId,
-        likeStatus,
+        reactionUpdate.userId,
+        reactionUpdate.likeStatus,
       );
 
-      if (!updatedComment) {
-        return res
-          .status(httpStatuses.NOT_FOUND_404)
-          .send({ message: 'Comment not found' });
-      } else {
-        return res.sendStatus(httpStatuses.NO_CONTENT_204);
-      }
+      if (!updatedComment) 
+      throw new NotFoundException({ message: 'Comment not found' });
+        return updatedComment;
+      
     } catch (error) {
       console.error('Ошибка при обновлении реакций:', error);
-      return res
-        .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
     }
   }
-  //TODO: тут пока не понятно что именно!!!
-  async changeCommentReaction(req: Request, res: Response) {
+  //TODO: тут пока не понятно что именно!!! may be finished
+  @Put('/:commentId/')// какой путь прописывать?
+  @HttpCode(204)
+  async changeCommentReaction(
+    @Param('commentId') commentId: string,
+    @Body() reactionUpdate: ReactionUpdateDto
+    //req: Request, res: Response
+    ) {
     try {
-      const commentId = req.params.commentId;
-      const userId = req.user!.id;
-      const userLogin = req.user!.login;
-      const likeStatus = req.body.likeStatus as ReactionStatusEnum;
+      //const commentId = req.params.commentId;
+      //const userId = req.user!.id;
+      //const userLogin = req.user!.login;
+      //const likeStatus = req.body.likeStatus as ReactionStatusEnum;
 
       // Вызываем метод из CommentsService
-      await this.commentsService.changeReactionForComment(
+      const res = await this.commentsService.changeReactionForComment(
         commentId,
-        userId,
-        userLogin,
-        likeStatus,
+        reactionUpdate.userId,
+        reactionUpdate.userLogin,
+        reactionUpdate.likeStatus,
       );
 
-      return res.sendStatus(httpStatuses.NO_CONTENT_204);
+      return res
     } catch (error) {
       console.error(error);
-      return res
-        .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
     }
   }
   

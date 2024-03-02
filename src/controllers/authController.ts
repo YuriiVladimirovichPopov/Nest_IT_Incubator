@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { BadRequestException, Controller, Get, HttpCode, InternalServerErrorException, Post, UnauthorizedException } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { ObjectId } from 'bson';
 import { error } from 'console';
@@ -22,7 +22,9 @@ export class AuthController {
     private queryUserRepository: QueryUserRepository,
     private deviceRepository: DeviceRepository,
   ) {}
-
+  
+  @Post()
+  @HttpCode(200)  
   async login(req: Request, res: Response) {
     const user = await this.authService.checkCredentials(
       req.body.loginOrEmail,
@@ -48,14 +50,15 @@ export class AuthController {
       await this.authService.addNewDevice(newDevice);
       res
         .cookie('refreshToken', refreshToken, { httpOnly: true, secure: true })
-        .status(httpStatuses.OK_200)
         .send({ accessToken: accessToken });
       return;
     } else {
-      return res.sendStatus(httpStatuses.UNAUTHORIZED_401);
+      throw new UnauthorizedException();
     }
   }
-
+  //TODO: навесить гуарды с 429 ошибкой
+  @Post()
+  @HttpCode(204)
   async passwordRecovery(req: Request, res: Response) {
     const email = req.body.email;
     const user: UsersMongoDbType | null =
@@ -72,51 +75,49 @@ export class AuthController {
         updatedUser.recoveryCode!,
       );
       return res
-        .status(httpStatuses.NO_CONTENT_204)
         .send({ message: 'Recovery code sent' });
     } catch (error) {
-      return res
-        .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
     }
   }
-
+  //TODO: навесить гуарды с 429 ошибкой
+  @Post()
+  @HttpCode(204)
   async newPassword(req: Request, res: Response) {
     const { newPassword, recoveryCode } = req.body;
 
     const user = await this.usersRepository.findUserByRecoryCode(recoveryCode);
 
-    if (!user) {
-      return res.status(httpStatuses.BAD_REQUEST_400).send({
-        errorsMessages: [
-          {
-            message: 'send recovery code',
-            field: 'recoveryCode',
-          },
-        ],
-      });
-    }
+    if (!user) throw new BadRequestException({
+      errorsMessages: [
+        {
+          message: 'send recovery code',
+          field: 'recoveryCode',
+        },
+      ],
+    })
     const result = await this.authService.resetPasswordWithRecoveryCode(
       user._id,
       newPassword,
     );
     if (result.success) {
-      return res
-        .status(httpStatuses.NO_CONTENT_204)
-        .send('code is valid and new password is accepted');
+      return res.send('code is valid and new password is accepted');
     }
   }
 
+  @Get()
+  @HttpCode(200)
   async me(req: Request, res: Response) {
     const userId = req.userId;
-    if (!userId) {
-      return res.sendStatus(httpStatuses.UNAUTHORIZED_401);
-    } else {
+    if (!userId) throw new UnauthorizedException()
+     else {
       const userViewModel = await this.queryUserRepository.findUserById(userId);
-      return res.status(httpStatuses.OK_200).send(userViewModel);
+      return userViewModel;
     }
   }
 
+  @Post()
+  @HttpCode(204)
   async registrationConfirmation(
     req: RequestWithBody<CodeType>,
     res: Response,
@@ -127,34 +128,32 @@ export class AuthController {
       req.body.code,
     );
 
-    if (!user) {
-      return res.status(httpStatuses.BAD_REQUEST_400).send({
-        errorsMessages: [
-          { message: 'User not found by this code', field: 'code' },
-        ],
-      });
-    }
-    if (user.emailConfirmation!.isConfirmed) {
-      return res.status(httpStatuses.BAD_REQUEST_400).send({
+    if (!user) 
+      throw new BadRequestException({
+        errorsMessages: [{ message: 'User not found by this code', field: 'code' },
+      ],
+    })
+    
+    if (user.emailConfirmation!.isConfirmed) 
+      throw new BadRequestException({
         errorsMessages: [{ message: 'Email is confirmed', field: 'code' }],
-      });
-    }
-    if (user.emailConfirmation!.expirationDate < currentDate) {
-      return res.status(httpStatuses.BAD_REQUEST_400).send({
+    });
+    
+    if (user.emailConfirmation!.expirationDate < currentDate) 
+      throw new BadRequestException({
         errorsMessages: [{ message: 'The code is exparied', field: 'code' }],
-      });
-    }
-    if (user.emailConfirmation!.confirmationCode !== req.body.code) {
-      return res
-        .status(httpStatuses.BAD_REQUEST_400)
-        .send({ errorsMessages: [{ message: 'Invalid code', field: 'code' }] });
-    }
+    })
 
-    await this.authService.updateConfirmEmailByUser(user._id.toString());
+    if (user.emailConfirmation!.confirmationCode !== req.body.code) 
+      throw new BadRequestException({ 
+        errorsMessages: [{ message: 'Invalid code', field: 'code' }] });
 
-    return res.sendStatus(httpStatuses.NO_CONTENT_204);
+    const result = await this.authService.updateConfirmEmailByUser(user._id.toString());
+
+    return result;
   }
 
+  @Post()
   async registration(req: RequestWithBody<UserInputModel>, res: Response) {
     const user = await this.authService.createUser(
       req.body.login,
@@ -162,27 +161,21 @@ export class AuthController {
       req.body.password,
     );
 
-    if (user) {
+    if (!user) throw new BadRequestException() 
+    
       return res.sendStatus(httpStatuses.NO_CONTENT_204);
-    } else {
-      return res.sendStatus(httpStatuses.BAD_REQUEST_400);
-    }
   }
 
+  @Post()
   async registrationEmailResending(
     req: RequestWithBody<UsersMongoDbType>,
     res: Response,
   ) {
     const user = await this.usersRepository.findUserByEmail(req.body.email);
-    if (!user) {
-      return res.sendStatus(httpStatuses.BAD_REQUEST_400);
-    }
+    if (!user) throw new BadRequestException()
 
-    if (user.emailConfirmation.isConfirmed) {
-      return res
-        .status(httpStatuses.BAD_REQUEST_400)
-        .send({ message: 'isConfirmed' });
-    }
+    if (user.emailConfirmation.isConfirmed) 
+    throw new BadRequestException({ message: 'isConfirmed' })
 
     const userId = req.body._id;
     const updatedUser =
@@ -199,6 +192,8 @@ export class AuthController {
     return res.sendStatus(httpStatuses.NO_CONTENT_204);
   }
 
+  @Post()
+  @HttpCode(200)
   async refreshToken(req: Request, res: Response) {
     const deviceId = req.deviceId!;
     const userId = req.userId!;
@@ -213,32 +208,29 @@ export class AuthController {
         newLastActiveDate,
       );
       return res
-        .status(httpStatuses.OK_200)
         .cookie('refreshToken', tokens.newRefreshToken, {
           httpOnly: true,
           secure: true,
         })
         .send({ accessToken: tokens.accessToken });
     } catch (error) {
-      return res
-        .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
     }
   }
 
+  @Post()
+  @HttpCode(204)
   async logOut(req: Request, res: Response) {
     const deviceId = req.deviceId!;
     const userId = req.userId!;
 
     try {
-      await this.deviceRepository.deleteDeviceById(userId, deviceId);
+      const res = await this.deviceRepository.deleteDeviceById(userId, deviceId);
 
-      return res.sendStatus(httpStatuses.NO_CONTENT_204);
+      return res
     } catch (error) {
       console.error(error);
-      return res
-        .status(httpStatuses.INTERNAL_SERVER_ERROR_500)
-        .send({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
     }
   }
 }

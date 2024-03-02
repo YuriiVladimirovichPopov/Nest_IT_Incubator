@@ -27,7 +27,7 @@ export class UserController {
   @Get()
   @HttpCode(200)
   async getAllUsers(
-    @Query() query//: ParsedQs
+    @Query() query//TODO: ParsedQs???
     ): Promise<Paginated<UserViewModel>>{
     const pagination = getUsersPagination(query); 
     

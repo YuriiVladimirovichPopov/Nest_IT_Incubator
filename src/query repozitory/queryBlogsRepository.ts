@@ -58,15 +58,6 @@ export class QueryBlogsRepository {
     return res;
   }
 
-  /*   import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
-
-@Injectable()
-export class ValidationPipe implements PipeTransform {
-  transform(value: any, metadata: ArgumentMetadata) {
-    return value;
-  }
-} */
-
   async findBlogById(id: string): Promise<BlogViewModel | null> {
     if (!isValidObjectId(id)) return null;
     const blogById = await this.BlogModel.findOne({

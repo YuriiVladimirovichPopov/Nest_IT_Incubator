@@ -5,7 +5,6 @@ import { UserViewModel } from '../models/users/userViewModel';
 import { Paginated } from 'src/pagination';
 import { UserCreateViewModel } from '../models/users/createUser';
 import { User, UserDocument } from '../domain/schemas/users.schema';
-import { randomUUID } from 'crypto';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -23,8 +22,6 @@ export class UsersRepository {
       login: user.login,
       email: user.email,
       createdAt: user.createdAt,
-      //emailConfirmation: user.emailConfirmation,
-      //recoveryCode: randomUUID(),
     };
   }
 
