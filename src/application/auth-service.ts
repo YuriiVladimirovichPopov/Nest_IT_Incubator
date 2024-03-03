@@ -15,7 +15,7 @@ import { settings } from 'src/main';
 import bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-//import { emailManager } from '../adapters/email-manager';
+import { emailAdapter } from 'src/adapters/email-adapter';
 
 @Injectable()
 export class AuthService {
@@ -77,7 +77,7 @@ export class AuthService {
 
   async checkAndFindUserByToken(req: Request, token: string) {
     try {
-      const result: any = Jwt.verify(token, settings.JWT_SECRET); // TODO: any don't like. Need change
+      const result: any = Jwt.verify(token, settings.JWT_SECRET); 
       const user = await this.queryUserRepository.findUserById(result.userId);
       return user;
     } catch (error) {
@@ -90,7 +90,7 @@ export class AuthService {
     return hash;
   }
 
-  async updateConfirmEmailByUser(userId: string): Promise<boolean> {
+  async updateConfirmEmailByUser(userId: string): Promise<boolean> {  // TODO по идее нужно обращаться к репе и уже из репы обращаться к модели
     const foundUserByEmail = await this.UserModel.updateOne(
       { _id: new ObjectId(userId) },
       { $set: { 'emailConfirmation.isConfirmed': true } },
@@ -141,7 +141,7 @@ export class AuthService {
     return bcrypt.hash(password, 10);
   }
 
-  async updateAndFindUserForEmailSend(
+  async updateAndFindUserForEmailSend(  // TODO по идее нужно обращаться к репе и уже из репы обращаться к модели
     userId: ObjectId,
   ): Promise<UsersMongoDbType | null> {
     const user = await this.UserModel.findOne({ _id: userId });

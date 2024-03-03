@@ -27,74 +27,16 @@ export class PostsRepository {
     private queryBlogsRepository: QueryBlogsRepository
   ) {}
 
-  /* private postMapper(
-    post: PostsMongoDb,
-    postReaction: ExtendedReactionInfoViewModelForPost | null,
-  ): PostsViewModel {
-    if (!postReaction) {
-      postReaction = {
-        likesCount: 0,
-        dislikesCount: 0,
-        myStatus: ReactionStatusEnum.None,
-        newestLikes: [],
-      };
-    }
-    return {
-      id: post._id.toString(),
-      title: post.title,
-      shortDescription: post.shortDescription,
-      content: post.content,
-      blogId: post.blogId,
-      blogName: post.blogName || null,
-      createdAt: post.createdAt,
-      extendedLikesInfo: {
-        likesCount: postReaction.likesCount,
-        dislikesCount: postReaction.dislikesCount,
-        myStatus: postReaction.myStatus || ReactionStatusEnum.None,
-        newestLikes: postReaction.newestLikes,
-      },
-    };
-  } */
-// унести в сервис
-  async createdPostForSpecificBlog(
-    newPost: PostsViewModel,
+  
+// TODO: унести в сервис
+  async createPost(
+    newPost: PostsMongoDb,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     user?: UserViewModel,
-  ): Promise<PostsViewModel | null> {
-    try {
-      // Находим блог по id нового поста
-    
-      const blog = await this.queryBlogsRepository.findBlogById(newPost.blogId);
-      if (!blog) {
-        return null;
-      }
-      
-      // Создаем объект поста для базы данных
-      const createPostForBlog: PostsMongoDb = {
-        _id: new ObjectId(),
-        title: newPost.title,
-        shortDescription: newPost.shortDescription,
-        content: newPost.content,
-        blogId: newPost.blogId,
-        blogName: blog.name,
-        createdAt: new Date().toISOString(),
-        extendedLikesInfo: {
-          likesCount: newPost.extendedLikesInfo?.likesCount || 0,
-          dislikesCount: newPost.extendedLikesInfo?.dislikesCount || 0,
-          newestLikes: [], // Пустой массив, так как новый пост не имеет лайков
-        },
-      };
-      // Создаем новый пост
-      const createdPost = await this.PostModel.create(createPostForBlog);
-
-      // Преобразуем созданный пост и реакции в формат PostsViewModel
-      const postsViewModel = PostsMongoDb.postMapper(createdPost, null);
-       
-      return postsViewModel;
-    } catch (error) {
-      console.error('Error creating post:', error);
-      return null;
-    }
+  ) {
+      const createdPost = await this.PostModel.create(newPost);
+        return createdPost
+   
   }
 
   async updatePost(

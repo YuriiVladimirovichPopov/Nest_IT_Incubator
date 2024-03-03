@@ -39,7 +39,9 @@ export class UserController {
   
   @Post()
   @HttpCode(201)
-  async createNewUser(@Body() inputModel: UserInputModel) {
+  async createNewUser(
+    @Body() inputModel: UserInputModel
+    ) {
     const newUser = await this.authService.createUser(
       inputModel.login,
       inputModel.email, 
@@ -56,8 +58,6 @@ export class UserController {
   async deleteUserById(
     @Param('id') id: string
   ) {
-    console.log('deleteUserById', id);  //TODO: undefined почему то
-    
     const foundUser = await this.usersRepository.deleteUserById(id);
     if (!foundUser) throw new NotFoundException()
     return foundUser;

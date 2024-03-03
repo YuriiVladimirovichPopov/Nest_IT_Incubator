@@ -1,12 +1,12 @@
 import { ParsedQs } from 'qs';
-import { Response, Request } from 'express';
+
 import { BlogService } from '../application/blog-service';
 import { BlogCreateModel } from '../models/blogs/blogsInputModel';
 import { BlogViewModel } from '../models/blogs/blogsViewModel';
-import { getByIdParam } from '../models/getById';
+
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
-import { httpStatuses } from 'src/send-status';
+
 import { PostsRepository } from '../repositories/posts-repository';
 import { UserViewModel } from '../models/users/userViewModel';
 import {
@@ -23,12 +23,13 @@ import {
 } from '@nestjs/common';
 import { Paginated, PaginatedType, getPaginationFromQuery } from 'src/pagination';
 import { PostCreateForBlogDTO } from 'src/models/posts/postCreateDTO';
+import { PostsService } from '../application/post-service';
 
 @Controller('blogs')
 export class BlogsController {
   constructor(
     private blogService: BlogService,
-    private postsRepository: PostsRepository,
+    private postsService: PostsService,
     private queryPostRepository: QueryPostRepository,
   ) {}
   
@@ -53,14 +54,14 @@ export class BlogsController {
   @Get('/:id/posts')
   @HttpCode(200)
   async getPostByBlogId(
-    @Query() query: ParsedQs, //добавил ParsedQs
+    @Query() query: ParsedQs, 
     @Param('id') blogId: string,
     @Body() user: UserViewModel
   ) {
     const blogWithPosts = await this.blogService.findBlogById(blogId);
 
     if (!blogWithPosts) throw new NotFoundException({ message: 'blog with posts not found' })
-    const pagination = new PaginatedType(query); //query
+    const pagination = new PaginatedType(query);
 
     const foundBlogWithAllPosts: Paginated<PostsViewModel> =
       await this.queryPostRepository.findAllPostsByBlogId(
@@ -80,7 +81,7 @@ export class BlogsController {
     ) {
 
     const newPostForBlogById: PostsViewModel | null =
-      await this.postsRepository.createdPostForSpecificBlog({...createPostForBlog, blogId});
+      await this.postsService.createdPostForSpecificBlog({...createPostForBlog, blogId});
 
     if (!newPostForBlogById) throw new NotFoundException({ message: 'posts not found' })
       return newPostForBlogById;
@@ -109,7 +110,7 @@ export class BlogsController {
     );
     if (!updateBlog) throw new NotFoundException({ message: 'blog not found' });
 
-    return updateBlog; // TODO может не надо updateBlog 
+    return updateBlog; 
   }
    
   @Delete('/:id')

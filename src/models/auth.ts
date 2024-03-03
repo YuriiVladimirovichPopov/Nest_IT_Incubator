@@ -1,4 +1,4 @@
-export type AuthViewModel = {
+export class AuthViewModel {
   email: string;
   login: string;
   userId: string;

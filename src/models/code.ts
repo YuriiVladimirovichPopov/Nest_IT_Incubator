@@ -1,3 +1,3 @@
-export type CodeType = {
+export class CodeType {
   code: string;
 };

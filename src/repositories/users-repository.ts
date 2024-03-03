@@ -43,7 +43,11 @@ export class UsersRepository {
     }
 
     const result: UsersMongoDbType[] = await this.UserModel.find(filter, {
-      projection: { passwordHash: 0, passwordSalt: 0, emailConfirmation: 0, recoveryCode: 0 }, // добавил emailConfirmation: 0, recoveryCode: 0
+      projection: { 
+        passwordHash: 0, 
+        passwordSalt: 0, 
+        emailConfirmation: 0, 
+        recoveryCode: 0 }, // добавил emailConfirmation: 0, recoveryCode: 0
     })
 
       .sort({ [pagination.sortBy]: pagination.sortDirection })
@@ -71,12 +75,12 @@ export class UsersRepository {
     return user;
   }
 
-  async findUserByEmail(email: string): Promise<UsersMongoDbType | null> {
+  async findUserByEmail(email: string): Promise<UsersMongoDbType | null> { 
     const user = await this.UserModel.findOne({ email: email });
     return user.toObject();
   }
 
-  async findUserByConfirmationCode(emailConfirmationCode: string) {
+  async findUserByConfirmationCode(emailConfirmationCode: string) { 
     const user = await this.UserModel.findOne({
       'emailConfirmation.confirmationCode': emailConfirmationCode,
     });
@@ -108,14 +112,14 @@ export class UsersRepository {
     }
   }
 
-  async findUserByRecoryCode(
+  async findUserByRecoryCode(  
     recoveryCode: string,
   ): Promise<UsersMongoDbType | null> {
     const user = await this.UserModel.findOne({ recoveryCode });
     return user.toObject();
   }
 
-  async sendRecoveryMessage(user: UsersMongoDbType): Promise<UsersMongoDbType> {
+  async sendRecoveryMessage(user: UsersMongoDbType): Promise<UsersMongoDbType> { 
     const recoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
     const updatedUser: UsersMongoDbType | null =
       await this.UserModel.findByIdAndUpdate(

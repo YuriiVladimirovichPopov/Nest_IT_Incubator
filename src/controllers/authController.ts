@@ -24,8 +24,10 @@ export class AuthController {
   ) {}
   
   @Post()
-  @HttpCode(200)  
-  async login(req: Request, res: Response) {
+  @HttpCode(200)   
+  async login(
+    
+    req: Request, res: Response) {
     const user = await this.authService.checkCredentials(
       req.body.loginOrEmail,
       req.body.password,
@@ -162,7 +164,7 @@ export class AuthController {
     );
 
     if (!user) throw new BadRequestException() 
-    
+
       return res.sendStatus(httpStatuses.NO_CONTENT_204);
   }
 

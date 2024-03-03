@@ -83,7 +83,7 @@ export class CommentController {
   async updateLikesDislikes(
     @Param('commentId') commentId: string,
     @Body() reactionUpdate: ReactionUpdateDto
-    //req: Request, res: Response
+  //req: Request, res: Response
     ) {
     try {
       //const commentId = req.params.commentId;

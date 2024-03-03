@@ -16,8 +16,10 @@ import { Post, PostDocument } from '../domain/schemas/posts.schema';
 import { ReactionsService } from './reaction-service';
 import { PostsMongoDb } from '../types';
 import { Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { UserViewModel } from 'src/models/users/userViewModel';
+import { QueryBlogsRepository } from 'src/query repozitory/queryBlogsRepository';
 
 @Injectable()
 export class PostsService {
@@ -28,6 +30,7 @@ export class PostsService {
     private readonly ReactionModel: Model<ReactionDocument>,
     @InjectModel(Post.name)
     private readonly PostModel: Model<PostDocument>,
+    private queryBlogsRepository: QueryBlogsRepository,
     private queryPostRepository: QueryPostRepository,
     private postsRepository: PostsRepository,
     private reactionsRepository: ReactionsRepository,
@@ -46,6 +49,47 @@ export class PostsService {
     userId: string,
   ): Promise<PostsViewModel | null> {
     return await this.queryPostRepository.findPostById(id, userId);
+  }
+
+  async createdPostForSpecificBlog(
+    newPost: PostsViewModel,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    user?: UserViewModel,
+  ): Promise<PostsViewModel | null> {
+    try {
+      // Находим блог по id нового поста
+    
+      const blog = await this.queryBlogsRepository.findBlogById(newPost.blogId);
+      if (!blog) {
+        return null; //TODO: may be need do throw 
+      }
+      
+      // Создаем объект поста для базы данных
+      const createPostForBlog: PostsMongoDb = {
+        _id: new ObjectId(),
+        title: newPost.title,
+        shortDescription: newPost.shortDescription,
+        content: newPost.content,
+        blogId: newPost.blogId,
+        blogName: blog.name,
+        createdAt: new Date().toISOString(),
+        extendedLikesInfo: {
+          likesCount: newPost.extendedLikesInfo?.likesCount || 0,
+          dislikesCount: newPost.extendedLikesInfo?.dislikesCount || 0,
+          newestLikes: [], // Пустой массив, так как новый пост не имеет лайков
+        },
+      };
+      // Создаем новый пост
+      const createdPost = await this.postsRepository.createPost(createPostForBlog);
+
+      // Преобразуем созданный пост и реакции в формат PostsViewModel
+      const postsViewModel = PostsMongoDb.postMapper(createdPost, null);
+       
+      return postsViewModel;
+    } catch (error) {
+      console.error('Error creating post:', error);
+      return null;
+    }
   }
 
   async updatePost(
