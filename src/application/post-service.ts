@@ -52,7 +52,7 @@ export class PostsService {
   }
 
   async createdPostForSpecificBlog(
-    newPost: PostsViewModel,
+    newPost: PostCreateModel,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     user?: UserViewModel,
   ): Promise<PostsViewModel | null> {
@@ -61,7 +61,7 @@ export class PostsService {
     
       const blog = await this.queryBlogsRepository.findBlogById(newPost.blogId);
       if (!blog) {
-        return null; //TODO: may be need do throw 
+        return null; //TODO: may be need do throw notFoundError()
       }
       
       // Создаем объект поста для базы данных
@@ -74,8 +74,8 @@ export class PostsService {
         blogName: blog.name,
         createdAt: new Date().toISOString(),
         extendedLikesInfo: {
-          likesCount: newPost.extendedLikesInfo?.likesCount || 0,
-          dislikesCount: newPost.extendedLikesInfo?.dislikesCount || 0,
+          likesCount: 0, //newPost.extendedLikesInfo?.likesCount || 0
+          dislikesCount: 0, //newPost.extendedLikesInfo?.dislikesCount || 0
           newestLikes: [], // Пустой массив, так как новый пост не имеет лайков
         },
       };

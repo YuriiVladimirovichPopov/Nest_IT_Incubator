@@ -27,14 +27,12 @@ export class PostsRepository {
     private queryBlogsRepository: QueryBlogsRepository
   ) {}
 
-  
-// TODO: унести в сервис
   async createPost(
-    newPost: PostsMongoDb,
+    newPost: PostCreateModel,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     user?: UserViewModel,
   ) {
-      const createdPost = await this.PostModel.create(newPost);
+      const createdPost: PostsMongoDb | null = await this.PostModel.create(newPost);
         return createdPost
    
   }

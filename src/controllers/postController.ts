@@ -1,14 +1,11 @@
-import { Response, Request } from 'express';
 import { PostsService } from '../application/post-service';
 import { CommentViewModel } from '../models/comments/commentViewModel';
-import { getByIdParam } from '../models/getById';
 import { PostCreateModel } from 'src/models/posts/postsInputModel';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
 import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
 import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 import {ParsedQs} from 'qs'
-import { httpStatuses } from 'src/send-status';
 import { RequestWithParams, UsersMongoDbType } from '../types';
 import { PostsRepository } from '../repositories/posts-repository';
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, InternalServerErrorException, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
@@ -23,6 +20,7 @@ import { QueryUserRepository } from 'src/query repozitory/queryUserRepository';
 import { CommentsRepository } from 'src/repositories/comments-repository';
 import { CreateCommentDto } from 'src/models/comments/createCommentDto';
 import { ReactionUpdateDto } from 'src/models/reaction/reactionDto';
+import { PostCreateForBlogDTO } from 'src/models/posts/postCreateDTO';
 
 @Controller('posts')
 export class PostController {
@@ -111,17 +109,19 @@ export class PostController {
   
   @Post()
   @HttpCode(201)
-  async createPostByBlogId(@Body() data: PostsViewModel): Promise<PostsViewModel> {
+  async createPostByBlogId(
+    @Body() data: PostCreateModel
+    ): Promise<PostsViewModel> {
     const findBlogById = await this.queryBlogsRepository.findBlogById(data.blogId);
 
     if (!findBlogById) {
       throw new BadRequestException('Blog not found');
     }
 
-    const newPost: PostsViewModel | null = await this.postsRepository.createdPostForSpecificBlog(data);
+    const newPost: PostsViewModel | null = await this.postsService.createdPostForSpecificBlog(data);
 
     if (!newPost) {
-      throw new InternalServerErrorException('Failed to create post');
+      throw new BadRequestException('Failed to create post');
     }
 
     return newPost;

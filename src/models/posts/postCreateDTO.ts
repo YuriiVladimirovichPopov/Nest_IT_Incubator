@@ -7,6 +7,7 @@ export class PostCreateForBlogDTO {
   title: string;
   shortDescription: string;
   content: string;
+  blogId: string;
   blogName: string | null;
   createdAt: string;
   extendedLikesInfo: ExtendedReactionInfoViewModelForPost;
@@ -16,6 +17,7 @@ export class PostCreateForBlogDTO {
     title: string,
     shortDescription: string,
     content: string,
+    blogId: string,
     blogName: string | null,
     extendedLikesInfo: ExtendedReactionInfoViewModelForPost,
   ) {
@@ -23,6 +25,7 @@ export class PostCreateForBlogDTO {
     this.title = title;
     this.shortDescription = shortDescription;
     this.content = content;
+    this.blogId = blogId;
     this.blogName = blogName;
     this.createdAt = new Date().toISOString();
     this.extendedLikesInfo = extendedLikesInfo;
