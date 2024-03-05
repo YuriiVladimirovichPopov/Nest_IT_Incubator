@@ -140,7 +140,7 @@ export class AuthService {
   async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
   }
-
+//change name metod
   async updateAndFindUserForEmailSend(  // TODO по идее нужно обращаться к репе и уже из репы обращаться к модели
     userId: ObjectId,
   ): Promise<UsersMongoDbType | null> {

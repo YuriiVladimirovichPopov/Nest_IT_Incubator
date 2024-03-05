@@ -103,7 +103,7 @@ export class PostController {
         pagination,
         user?._id?.toString(),
       );
-    if (!allPosts) throw new NotFoundException()
+    if (!allPosts) throw new NotFoundException() // TODO:тут по идее массив ошибок должен быть
     return allPosts;
   }
   
@@ -115,13 +115,13 @@ export class PostController {
     const findBlogById = await this.queryBlogsRepository.findBlogById(data.blogId);
 
     if (!findBlogById) {
-      throw new BadRequestException('Blog not found');
+      throw new BadRequestException('Blog not found'); // TODO:тут по идее массив ошибок должен быть
     }
 
     const newPost: PostsViewModel | null = await this.postsService.createdPostForSpecificBlog(data);
 
     if (!newPost) {
-      throw new BadRequestException('Failed to create post');
+      throw new BadRequestException('Failed to create post'); // TODO:тут по идее массив ошибок должен быть
     }
 
     return newPost;
@@ -137,7 +137,7 @@ export class PostController {
       id,
      user?._id?.toString(),
     );
-    if (!foundPost) throw new NotFoundException({ message: 'post not found' })
+    if (!foundPost) throw new NotFoundException({ message: 'post not found' }) // TODO:тут по идее массив ошибок должен быть
       return foundPost;
     
   }
@@ -153,7 +153,7 @@ export class PostController {
       post
     );
 
-    if (!updatePost) throw new NotFoundException({ message: 'post not found' })
+    if (!updatePost) throw new NotFoundException({ message: 'post not found' }) // TODO:тут по идее массив ошибок должен быть
     return updatePost;
     
   }
@@ -175,7 +175,7 @@ export class PostController {
         likeStatus !== ReactionStatusEnum.Like &&
         likeStatus !== ReactionStatusEnum.Dislike &&
         likeStatus !== ReactionStatusEnum.None
-      ) throw new BadRequestException({ message: 'Like status is required', field: 'likeStatus' })
+      ) throw new BadRequestException({ message: 'Like status is required', field: 'likeStatus' }) // TODO:тут по идее массив ошибок должен быть
       
       const updatedPost = await this.postsService.updateLikesDislikesForPost(
         postId,
@@ -183,7 +183,7 @@ export class PostController {
         likeStatus,
       );
 
-      if (!updatedPost) throw new NotFoundException({ message: 'Post not found' })
+      if (!updatedPost) throw new NotFoundException({ message: 'Post not found' }) // TODO:тут по идее массив ошибок должен быть
      
         return updatedPost;
       
