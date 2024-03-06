@@ -10,6 +10,19 @@ export class DeviceRepository {
     @InjectModel(Device.name)
     private readonly DeviceModel: Model<DeviceDocument>,
   ) {}
+  async addDevice(
+    device: DeviceMongoDbType,
+  ): Promise<DeviceMongoDbType | null> {
+    const newDevice = new this.DeviceModel(device);
+    try {
+      await newDevice.save();
+      return newDevice.toObject();
+    } catch (error) {
+      console.error('Error saving new device:', error);
+      return null;
+    }
+  }
+
   async findDeviceByUser(deviceId: string): Promise<DeviceMongoDbType | null> {
     try {
       const device: DeviceDocument | null = await this.DeviceModel.findOne({
@@ -49,6 +62,18 @@ export class DeviceRepository {
       console.error('Error getting devices by userId:', error);
       return [];
     }
+  }
+
+  async updateRefreshTokenByDeviceId(
+    deviceId: string,
+    newLastActiveDate: string,
+  ): Promise<boolean> {
+    const refTokenByDeviceId = await this.DeviceModel.updateOne(
+      // TODO
+      { deviceId: deviceId },
+      { $set: { lastActiveDate: newLastActiveDate } },
+    );
+    return refTokenByDeviceId.matchedCount === 1;
   }
 
   async deleteDeviceById(userId: string, deviceId: string): Promise<boolean> {

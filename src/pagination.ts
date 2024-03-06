@@ -163,5 +163,3 @@ export const getUsersPagination = (query: PaginatedType): UserPagination => {
 
   return defaultValues;
 };
- 
- 

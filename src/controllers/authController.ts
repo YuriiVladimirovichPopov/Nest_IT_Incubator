@@ -1,4 +1,12 @@
-import { BadRequestException, Controller, Get, HttpCode, InternalServerErrorException, Post, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  HttpCode,
+  InternalServerErrorException,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Response, Request } from 'express';
 import { ObjectId } from 'bson';
 import { error } from 'console';
@@ -7,7 +15,7 @@ import { AuthService } from '../application/auth-service';
 import { jwtService } from '../application/jwt-service';
 import { emailManager } from '../managers/email-manager';
 import { CodeType } from '../models/code';
-import { UserInputModel } from '../models/users/userInputModel';
+import { UserCreateDto } from '../models/users/userInputModel';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { DeviceRepository } from '../repositories/device-repository';
 import { UsersRepository } from '../repositories/users-repository';
@@ -22,12 +30,10 @@ export class AuthController {
     private queryUserRepository: QueryUserRepository,
     private deviceRepository: DeviceRepository,
   ) {}
-  
+
   @Post()
-  @HttpCode(200)   
-  async login(
-    
-    req: Request, res: Response) {
+  @HttpCode(200)
+  async login(req: Request, res: Response) {
     const user = await this.authService.checkCredentials(
       req.body.loginOrEmail,
       req.body.password,
@@ -76,10 +82,11 @@ export class AuthController {
         user.email,
         updatedUser.recoveryCode!,
       );
-      return res
-        .send({ message: 'Recovery code sent' });
+      return res.send({ message: 'Recovery code sent' });
     } catch (error) {
-      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({
+        message: 'Сервер на кофе-брейке!',
+      });
     }
   }
   //TODO: навесить гуарды с 429 ошибкой
@@ -90,14 +97,15 @@ export class AuthController {
 
     const user = await this.usersRepository.findUserByRecoryCode(recoveryCode);
 
-    if (!user) throw new BadRequestException({
-      errorsMessages: [
-        {
-          message: 'send recovery code',
-          field: 'recoveryCode',
-        },
-      ],
-    })
+    if (!user)
+      throw new BadRequestException({
+        errorsMessages: [
+          {
+            message: 'send recovery code',
+            field: 'recoveryCode',
+          },
+        ],
+      });
     const result = await this.authService.resetPasswordWithRecoveryCode(
       user._id,
       newPassword,
@@ -111,8 +119,8 @@ export class AuthController {
   @HttpCode(200)
   async me(req: Request, res: Response) {
     const userId = req.userId;
-    if (!userId) throw new UnauthorizedException()
-     else {
+    if (!userId) throw new UnauthorizedException();
+    else {
       const userViewModel = await this.queryUserRepository.findUserById(userId);
       return userViewModel;
     }
@@ -130,42 +138,46 @@ export class AuthController {
       req.body.code,
     );
 
-    if (!user) 
+    if (!user)
       throw new BadRequestException({
-        errorsMessages: [{ message: 'User not found by this code', field: 'code' },
-      ],
-    })
-    
-    if (user.emailConfirmation!.isConfirmed) 
+        errorsMessages: [
+          { message: 'User not found by this code', field: 'code' },
+        ],
+      });
+
+    if (user.emailConfirmation!.isConfirmed)
       throw new BadRequestException({
         errorsMessages: [{ message: 'Email is confirmed', field: 'code' }],
-    });
-    
-    if (user.emailConfirmation!.expirationDate < currentDate) 
+      });
+
+    if (user.emailConfirmation!.expirationDate < currentDate)
       throw new BadRequestException({
         errorsMessages: [{ message: 'The code is exparied', field: 'code' }],
-    })
+      });
 
-    if (user.emailConfirmation!.confirmationCode !== req.body.code) 
-      throw new BadRequestException({ 
-        errorsMessages: [{ message: 'Invalid code', field: 'code' }] });
+    if (user.emailConfirmation!.confirmationCode !== req.body.code)
+      throw new BadRequestException({
+        errorsMessages: [{ message: 'Invalid code', field: 'code' }],
+      });
 
-    const result = await this.authService.updateConfirmEmailByUser(user._id.toString());
+    const result = await this.authService.updateConfirmEmailByUser(
+      user._id.toString(),
+    );
 
     return result;
   }
 
   @Post()
-  async registration(req: RequestWithBody<UserInputModel>, res: Response) {
+  async registration(req: RequestWithBody<UserCreateDto>, res: Response) {
     const user = await this.authService.createUser(
       req.body.login,
       req.body.email,
       req.body.password,
     );
 
-    if (!user) throw new BadRequestException() 
+    if (!user) throw new BadRequestException();
 
-      return res.sendStatus(httpStatuses.NO_CONTENT_204);
+    return res.sendStatus(httpStatuses.NO_CONTENT_204);
   }
 
   @Post()
@@ -174,14 +186,14 @@ export class AuthController {
     res: Response,
   ) {
     const user = await this.usersRepository.findUserByEmail(req.body.email);
-    if (!user) throw new BadRequestException()
+    if (!user) throw new BadRequestException();
 
-    if (user.emailConfirmation.isConfirmed) 
-    throw new BadRequestException({ message: 'isConfirmed' })
+    if (user.emailConfirmation.isConfirmed)
+      throw new BadRequestException({ message: 'isConfirmed' });
 
     const userId = req.body._id;
     const updatedUser =
-      await this.authService.updateAndFindUserForEmailSend(userId);
+      await this.authService.findAndUpdateUserForEmailSend(userId);
 
     try {
       await emailManager.sendEmail(
@@ -216,7 +228,9 @@ export class AuthController {
         })
         .send({ accessToken: tokens.accessToken });
     } catch (error) {
-      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({
+        message: 'Сервер на кофе-брейке!',
+      });
     }
   }
 
@@ -227,12 +241,17 @@ export class AuthController {
     const userId = req.userId!;
 
     try {
-      const res = await this.deviceRepository.deleteDeviceById(userId, deviceId);
+      const res = await this.deviceRepository.deleteDeviceById(
+        userId,
+        deviceId,
+      );
 
-      return res
+      return res;
     } catch (error) {
       console.error(error);
-      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({
+        message: 'Сервер на кофе-брейке!',
+      });
     }
   }
 }

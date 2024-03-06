@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from 'src/application/auth-service';
 import { Paginated, getUsersPagination } from 'src/pagination';
-import { UserInputModel } from 'src/models/users/userInputModel';
+import { UserCreateDto } from 'src/models/users/userInputModel';
 import { Query } from '@nestjs/common';
 
 @Controller('users')
@@ -27,24 +27,22 @@ export class UserController {
   @Get()
   @HttpCode(200)
   async getAllUsers(
-    @Query() query//TODO: ParsedQs???
-    ): Promise<Paginated<UserViewModel>>{
-    const pagination = getUsersPagination(query); 
-    
+    @Query() query, //TODO: ParsedQs???
+  ): Promise<Paginated<UserViewModel>> {
+    const pagination = getUsersPagination(query);
+
     const allUsers: Paginated<UserViewModel> =
       await this.usersRepository.findAllUsers(pagination);
 
     return allUsers;
   }
-  
+
   @Post()
   @HttpCode(201)
-  async createNewUser(
-    @Body() inputModel: UserInputModel
-    ) {
+  async createNewUser(@Body() inputModel: UserCreateDto) {
     const newUser = await this.authService.createUser(
       inputModel.login,
-      inputModel.email, 
+      inputModel.email,
       inputModel.password,
     );
     if (!newUser) {
@@ -55,11 +53,9 @@ export class UserController {
 
   @Delete('/:id')
   @HttpCode(204)
-  async deleteUserById(
-    @Param('id') id: string
-  ) {
+  async deleteUserById(@Param('id') id: string) {
     const foundUser = await this.usersRepository.deleteUserById(id);
-    if (!foundUser) throw new NotFoundException()
+    if (!foundUser) throw new NotFoundException();
     return foundUser;
   }
 }

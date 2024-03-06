@@ -95,12 +95,11 @@ export class QueryPostRepository {
 
           myStatus = reaction ? reaction.myStatus : ReactionStatusEnum.None;
         }
-       
+
         const res = this._postMapper(post, myStatus);
-        
+
         items.push(res);
       }
-
 
       return {
         pagesCount: pageCount,

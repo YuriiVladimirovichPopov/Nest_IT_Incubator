@@ -6,7 +6,7 @@ import {
   Length,
 } from 'class-validator';
 
-export class UserInputModel {
+export class UserCreateDto {
   @IsObject()
   id: string;
 

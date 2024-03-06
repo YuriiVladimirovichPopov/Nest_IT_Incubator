@@ -1,4 +1,4 @@
-import { settings } from 'src/main';
+import { settings } from 'src/appSettings';
 //import { UsersMongoDbType } from '../types';
 import { Injectable } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';

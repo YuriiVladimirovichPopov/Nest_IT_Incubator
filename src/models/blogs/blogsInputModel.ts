@@ -1,29 +1,30 @@
 import { IsString, Length, IsNotEmpty, Matches, IsUrl } from 'class-validator';
+import { Trim } from 'src/helpers/Trim';
 
-export class BlogCreateModel {
-  @IsString()
-  @Length(2, 15)
+export class BlogCreateDto {
+  @Trim()
+  @IsString({ message: 'Must be string' })
   @IsNotEmpty()
+  @Length(1, 15, { message: 'Length must be from 1 to 15 simbols' })
   @Matches(/.*\S+.*/, {
-    message: 'name should not consist of whitespace characters', // TODO: change this string
+    message: 'name should not consist of whitespace characters',
   })
   name: string;
 
-  @IsString() // TODO: всЁ поменять местами
-  @Length(2, 500)
+  @Trim()
+  @IsString({ message: 'Must be string' })
   @IsNotEmpty()
+  @Length(1, 500, { message: 'Length must be from 1 to 500 simbols' })
   @Matches(/.*\S+.*/, {
-    message: 'description should not consist of whitespace characters', // TODO: change this string
+    message: 'description should not consist of whitespace characters',
   })
   description: string;
 
-  @IsString()
-  @Length(5, 100)
+  @IsString({ message: 'Must be string' })
   @IsNotEmpty()
   @IsUrl()
   @Matches(/.*\S+.*/, {
-    // TODO: change this string, may be it's wrong
-    message: 'websiteUrl should not consist of whitespace characters', // TODO: change this string, may be it's wrong
+    message: 'websiteUrl should not consist of whitespace characters',
   })
   websiteUrl: string;
 }

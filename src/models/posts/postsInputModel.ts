@@ -1,6 +1,6 @@
 import { IsString, Length, IsNotEmpty } from 'class-validator';
 
-export class PostCreateModel {
+export class PostCreateDto {
   @IsString({ message: 'Must be string' })
   @Length(1, 30, { message: 'Length must be from 1 to 30 symbols' })
   @IsNotEmpty()

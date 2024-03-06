@@ -8,7 +8,10 @@ import { User, UserDocument } from '../domain/schemas/users.schema';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
+import bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
+import { add } from 'date-fns';
 
 @Injectable()
 export class UsersRepository {
@@ -43,11 +46,12 @@ export class UsersRepository {
     }
 
     const result: UsersMongoDbType[] = await this.UserModel.find(filter, {
-      projection: { 
-        passwordHash: 0, 
-        passwordSalt: 0, 
-        emailConfirmation: 0, 
-        recoveryCode: 0 }, // добавил emailConfirmation: 0, recoveryCode: 0
+      projection: {
+        passwordHash: 0,
+        passwordSalt: 0,
+        emailConfirmation: 0,
+        recoveryCode: 0,
+      }, // добавил emailConfirmation: 0, recoveryCode: 0
     })
 
       .sort({ [pagination.sortBy]: pagination.sortDirection })
@@ -75,12 +79,12 @@ export class UsersRepository {
     return user;
   }
 
-  async findUserByEmail(email: string): Promise<UsersMongoDbType | null> { 
+  async findUserByEmail(email: string): Promise<UsersMongoDbType | null> {
     const user = await this.UserModel.findOne({ email: email });
     return user.toObject();
   }
 
-  async findUserByConfirmationCode(emailConfirmationCode: string) { 
+  async findUserByConfirmationCode(emailConfirmationCode: string) {
     const user = await this.UserModel.findOne({
       'emailConfirmation.confirmationCode': emailConfirmationCode,
     });
@@ -112,14 +116,14 @@ export class UsersRepository {
     }
   }
 
-  async findUserByRecoryCode(  
+  async findUserByRecoryCode(
     recoveryCode: string,
   ): Promise<UsersMongoDbType | null> {
     const user = await this.UserModel.findOne({ recoveryCode });
     return user.toObject();
   }
 
-  async sendRecoveryMessage(user: UsersMongoDbType): Promise<UsersMongoDbType> { 
+  async sendRecoveryMessage(user: UsersMongoDbType): Promise<UsersMongoDbType> {
     const recoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
     const updatedUser: UsersMongoDbType | null =
       await this.UserModel.findByIdAndUpdate(
@@ -127,5 +131,79 @@ export class UsersRepository {
         { $set: { recoveryCode } },
       );
     return updatedUser!;
+  }
+
+  async findTokenInBlackList(userId: string, token: string): Promise<boolean> {
+    const userByToken = await this.UserModel.findOne({
+      _id: new ObjectId(userId),
+      refreshTokenBlackList: { $in: [token] },
+    });
+    return !!userByToken;
+  }
+
+  async resetPasswordWithRecoveryCode(
+    _id: ObjectId,
+    newPassword: string,
+  ): Promise<any> {
+    // TODO: any don't like. need to change this Promise
+    const newPasswordSalt = await bcrypt.genSalt(10);
+    const newHashedPassword = await this._generateHash(
+      newPassword,
+      newPasswordSalt,
+    );
+
+    await this.UserModel.updateOne(
+      // TODO по идее нужно обращаться к репе и уже из репы обращаться к модели
+      { _id: _id },
+      {
+        $set: {
+          passwordHash: newHashedPassword,
+          passwordSalt: newPasswordSalt,
+          recoveryCode: null,
+        },
+      },
+    );
+    return { success: true };
+  }
+
+  async _generateHash(password: string, salt: string) {
+    const hash = bcrypt.hash(password, salt);
+    return hash;
+  }
+
+  async findAndUpdateUserForEmailSend(
+    userId: ObjectId,
+  ): Promise<UsersMongoDbType | null> {
+    const user = await this.UserModel.findOne({ _id: userId });
+
+    if (user && !user.emailConfirmation.isConfirmed) {
+      const confirmationCode = randomUUID();
+      const expirationDate = add(new Date(), { minutes: 60 });
+
+      const updatedUser = await this.UserModel.findOneAndUpdate(
+        { _id: userId },
+        {
+          $set: {
+            emailConfirmation: {
+              confirmationCode,
+              expirationDate,
+              isConfirmed: false,
+            },
+          },
+        },
+        { new: true }, // Возвращаем обновленный документ
+      );
+
+      return updatedUser ? updatedUser.toObject() : null;
+    }
+    return null;
+  }
+
+  async updateConfirmEmailByUser(userId: string): Promise<boolean> {
+    const foundUserByEmail = await this.UserModel.updateOne(
+      { _id: new Types.ObjectId(userId) },
+      { $set: { 'emailConfirmation.isConfirmed': true } },
+    );
+    return foundUserByEmail.matchedCount === 1;
   }
 }

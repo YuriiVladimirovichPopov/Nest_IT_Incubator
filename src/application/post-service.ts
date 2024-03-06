@@ -1,4 +1,4 @@
-import { PostCreateModel } from 'src/models/posts/postsInputModel';
+import { PostCreateDto } from 'src/models/posts/postsInputModel';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { PostsRepository } from '../repositories/posts-repository';
 import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
@@ -16,7 +16,7 @@ import { Post, PostDocument } from '../domain/schemas/posts.schema';
 import { ReactionsService } from './reaction-service';
 import { PostsMongoDb } from '../types';
 import { Injectable } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserViewModel } from 'src/models/users/userViewModel';
 import { QueryBlogsRepository } from 'src/query repozitory/queryBlogsRepository';
@@ -52,18 +52,18 @@ export class PostsService {
   }
 
   async createdPostForSpecificBlog(
-    newPost: PostCreateModel,
+    newPost: PostCreateDto,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     user?: UserViewModel,
   ): Promise<PostsViewModel | null> {
     try {
       // Находим блог по id нового поста
-    
+
       const blog = await this.queryBlogsRepository.findBlogById(newPost.blogId);
       if (!blog) {
         return null; //TODO: may be need do throw notFoundError()
       }
-      
+
       // Создаем объект поста для базы данных
       const createPostForBlog: PostsMongoDb = {
         _id: new ObjectId(),
@@ -80,11 +80,12 @@ export class PostsService {
         },
       };
       // Создаем новый пост
-      const createdPost = await this.postsRepository.createPost(createPostForBlog);
+      const createdPost =
+        await this.postsRepository.createPost(createPostForBlog);
 
       // Преобразуем созданный пост и реакции в формат PostsViewModel
       const postsViewModel = PostsMongoDb.postMapper(createdPost, null);
-       
+
       return postsViewModel;
     } catch (error) {
       console.error('Error creating post:', error);
@@ -94,7 +95,7 @@ export class PostsService {
 
   async updatePost(
     id: string,
-    data: PostCreateModel,
+    data: PostCreateDto,
   ): Promise<PostsViewModel | boolean> {
     return await this.postsRepository.updatePost(id, { ...data });
   }

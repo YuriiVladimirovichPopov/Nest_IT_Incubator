@@ -1,9 +1,8 @@
 import { PostsMongoDb } from '../types';
 import { ObjectId } from 'mongodb';
-import { PostCreateModel } from 'src/models/posts/postsInputModel';
+import { PostCreateDto } from 'src/models/posts/postsInputModel';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { Post, PostDocument } from '../domain/schemas/posts.schema';
-import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
 import { ExtendedReactionInfoViewModelForPost } from '../models/reaction/reactionInfoViewModel';
 import {
   Reaction,
@@ -17,29 +16,26 @@ import { Model } from 'mongoose';
 
 @Injectable()
 export class PostsRepository {
-  
   constructor(
     @InjectModel(Post.name)
     private readonly PostModel: Model<PostDocument>,
     @InjectModel(Reaction.name)
     private readonly ReactionModel: Model<ReactionDocument>,
-    //private readonly ExtendedReactionForPostModel: Model<ExtendedReactionForPostDocument>,
-    private queryBlogsRepository: QueryBlogsRepository
   ) {}
 
   async createPost(
-    newPost: PostCreateModel,
+    newPost: PostCreateDto,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     user?: UserViewModel,
   ) {
-      const createdPost: PostsMongoDb | null = await this.PostModel.create(newPost);
-        return createdPost
-   
+    const createdPost: PostsMongoDb | null =
+      await this.PostModel.create(newPost);
+    return createdPost;
   }
 
   async updatePost(
     id: string,
-    data: PostCreateModel,
+    data: PostCreateDto,
   ): Promise<PostsViewModel | boolean> {
     const foundPostById = await this.PostModel.updateOne(
       { _id: new ObjectId(id) },

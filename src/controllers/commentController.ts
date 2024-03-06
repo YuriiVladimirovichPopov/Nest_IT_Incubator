@@ -1,12 +1,22 @@
 import { ParsedQs } from 'qs';
-import { Response, Request } from 'express';
 import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
 import { CommentsRepository } from '../repositories/comments-repository';
-import { httpStatuses } from 'src/send-status';
 import { CommentsService } from '../application/comment-service';
-import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, InternalServerErrorException, NotFoundException, Param, Put, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  ForbiddenException,
+  Get,
+  HttpCode,
+  InternalServerErrorException,
+  NotFoundException,
+  Param,
+  Put,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { PaginatedType } from 'src/pagination';
-import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
 import { User } from 'src/domain/schemas/users.schema';
 import { ReactionUpdateDto } from 'src/models/reaction/reactionDto';
 
@@ -22,16 +32,16 @@ export class CommentController {
   @HttpCode(200)
   async getCommentById(
     @Param('commentId') commentId: string,
-    @Body() user: User
-    ) {
+    @Body() user: User,
+  ) {
     const foundComment = await this.commentsQueryRepository.findCommentById(
       commentId,
       user?._id?.toString(),
     );
-    if (!foundComment) throw new NotFoundException({ message: 'comment not found' })
-    
-      return foundComment;
-    
+    if (!foundComment)
+      throw new NotFoundException({ message: 'comment not found' });
+
+    return foundComment;
   }
 
   @Put('/:commentId')
@@ -39,31 +49,33 @@ export class CommentController {
   async updateCommentById(
     @Param('commentId') commentId: string,
     @Body() content: string,
-    @Req() user: User
+    @Req() user: User,
   ) {
-    
     const existingComment =
       await this.commentsQueryRepository.findCommentById(commentId);
-    if (!existingComment) throw new NotFoundException({ message: 'comment not found' })
+    if (!existingComment)
+      throw new NotFoundException({ message: 'comment not found' });
 
     if (existingComment.commentatorInfo.userId !== user._id.toString()) {
-      throw new ForbiddenException({ message: 'You do not have permission to access this resource' });
+      throw new ForbiddenException({
+        message: 'You do not have permission to access this resource',
+      });
     }
 
     const updateComment = await this.commentsRepository.updateComment(
       commentId,
       content,
     );
-      return updateComment
+    return updateComment;
   }
-//TODO: in process(may be finished)
+  //TODO: in process(may be finished)
   @Get('/:commentId')
   @HttpCode(200)
   async getCommentsByParentId(
     @Query() query: ParsedQs,
     @Param('parentId') parentId: string,
     @Body() userId: string,
-    ) {
+  ) {
     try {
       const pagination = new PaginatedType(query);
       const paginatedComments =
@@ -74,17 +86,19 @@ export class CommentController {
         );
       return paginatedComments;
     } catch (error) {
-      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({
+        message: 'Сервер на кофе-брейке!',
+      });
     }
   }
-//TODO: in process(may be finished)
+  //TODO: in process(may be finished)
   @Put('/:commentId/like-status')
   @HttpCode(204)
   async updateLikesDislikes(
     @Param('commentId') commentId: string,
-    @Body() reactionUpdate: ReactionUpdateDto
-  //req: Request, res: Response
-    ) {
+    @Body() reactionUpdate: ReactionUpdateDto,
+    //req: Request, res: Response
+  ) {
     try {
       //const commentId = req.params.commentId;
       //const userId = req.body.userId!;
@@ -96,23 +110,24 @@ export class CommentController {
         reactionUpdate.likeStatus,
       );
 
-      if (!updatedComment) 
-      throw new NotFoundException({ message: 'Comment not found' });
-        return updatedComment;
-      
+      if (!updatedComment)
+        throw new NotFoundException({ message: 'Comment not found' });
+      return updatedComment;
     } catch (error) {
       console.error('Ошибка при обновлении реакций:', error);
-      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({
+        message: 'Сервер на кофе-брейке!',
+      });
     }
   }
   //TODO: тут пока не понятно что именно!!! may be finished
-  @Put('/:commentId/')// какой путь прописывать?
+  @Put('/:commentId/') // какой путь прописывать?
   @HttpCode(204)
   async changeCommentReaction(
     @Param('commentId') commentId: string,
-    @Body() reactionUpdate: ReactionUpdateDto
+    @Body() reactionUpdate: ReactionUpdateDto,
     //req: Request, res: Response
-    ) {
+  ) {
     try {
       //const commentId = req.params.commentId;
       //const userId = req.user!.id;
@@ -127,32 +142,33 @@ export class CommentController {
         reactionUpdate.likeStatus,
       );
 
-      return res
+      return res;
     } catch (error) {
       console.error(error);
-      throw new InternalServerErrorException({ message: 'Сервер на кофе-брейке!' });
+      throw new InternalServerErrorException({
+        message: 'Сервер на кофе-брейке!',
+      });
     }
   }
-  
+
   @Delete('/:commentId')
   @HttpCode(204)
   async deleteCommentById(
     @Param('commentId') commentId: string,
-    @Req() user: User
+    @Req() user: User,
   ) {
-
     const comment =
       await this.commentsQueryRepository.findCommentById(commentId);
-    if (!comment) throw new NotFoundException({ message: 'comment not found' })
+    if (!comment) throw new NotFoundException({ message: 'comment not found' });
 
     const commentUserId = comment.commentatorInfo.userId;
-    if (commentUserId !== user._id.toString()) { 
-      throw new ForbiddenException({ message: 'You do not have permission to access this resource' });
+    if (commentUserId !== user._id.toString()) {
+      throw new ForbiddenException({
+        message: 'You do not have permission to access this resource',
+      });
     }
-    const commentDelete = await this.commentsRepository.deleteComment(
-      commentId,
-    );
-      return commentDelete
-    
+    const commentDelete =
+      await this.commentsRepository.deleteComment(commentId);
+    return commentDelete;
   }
 }

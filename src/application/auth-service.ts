@@ -2,30 +2,24 @@ import { add } from 'date-fns';
 import { randomUUID } from 'crypto';
 import { ObjectId } from 'mongodb';
 import { DeviceMongoDbType, UsersMongoDbType } from '../types';
-import { User, UserDocument } from '../domain/schemas/users.schema';
 import { UserCreateViewModel } from '../models/users/createUser';
-import { Device, DeviceDocument } from '../domain/schemas/device.schema';
 import { UsersRepository } from '../repositories/users-repository';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { Request } from 'express';
 import { Injectable } from '@nestjs/common';
 import { emailManager } from 'src/managers/email-manager';
 import Jwt from 'jsonwebtoken';
-import { settings } from 'src/main';
 import bcrypt from 'bcrypt';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { emailAdapter } from 'src/adapters/email-adapter';
+import { settings } from '../appSettings';
+import { DeviceRepository } from 'src/repositories/device-repository';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name)
-    private readonly UserModel: Model<UserDocument>,
-    @InjectModel(Device.name)
-    private readonly DeviceModel: Model<DeviceDocument>,
     private readonly usersRepository: UsersRepository,
     private readonly queryUserRepository: QueryUserRepository,
+    private readonly deviceRepository: DeviceRepository,
   ) {}
 
   async createUser(
@@ -51,7 +45,7 @@ export class AuthService {
         isConfirmed: false,
       },
     };
-
+    console.log('create user', newUser);
     const createResult = await this.usersRepository.createUser(newUser);
 
     try {
@@ -77,7 +71,7 @@ export class AuthService {
 
   async checkAndFindUserByToken(req: Request, token: string) {
     try {
-      const result: any = Jwt.verify(token, settings.JWT_SECRET); 
+      const result: any = Jwt.verify(token, settings.JWT_SECRET);
       const user = await this.queryUserRepository.findUserById(result.userId);
       return user;
     } catch (error) {
@@ -90,16 +84,13 @@ export class AuthService {
     return hash;
   }
 
-  async updateConfirmEmailByUser(userId: string): Promise<boolean> {  // TODO по идее нужно обращаться к репе и уже из репы обращаться к модели
-    const foundUserByEmail = await this.UserModel.updateOne(
-      { _id: new ObjectId(userId) },
-      { $set: { 'emailConfirmation.isConfirmed': true } },
-    );
-    return foundUserByEmail.matchedCount === 1;
+  async updateConfirmEmailByUser(userId: string): Promise<boolean> {
+    const userByEmail =
+      await this.usersRepository.updateConfirmEmailByUser(userId);
+    return userByEmail;
   }
 
   async validateRefreshToken(refreshToken: string): Promise<any> {
-    // TODO any don't like. Need change
     try {
       const payload = Jwt.verify(refreshToken, settings.refreshTokenSecret2);
       return payload;
@@ -109,10 +100,10 @@ export class AuthService {
   }
 
   async findTokenInBlackList(userId: string, token: string): Promise<boolean> {
-    const userByToken = await this.UserModel.findOne({
-      _id: new ObjectId(userId),
-      refreshTokenBlackList: { $in: [token] },
-    });
+    const userByToken = await this.usersRepository.findTokenInBlackList(
+      userId,
+      token,
+    );
     return !!userByToken;
   }
 
@@ -140,84 +131,36 @@ export class AuthService {
   async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
   }
-//change name metod
-  async updateAndFindUserForEmailSend(  // TODO по идее нужно обращаться к репе и уже из репы обращаться к модели
+
+  async findAndUpdateUserForEmailSend(
     userId: ObjectId,
   ): Promise<UsersMongoDbType | null> {
-    const user = await this.UserModel.findOne({ _id: userId });
-
-    if (user) {
-      if (!user.emailConfirmation!.isConfirmed) {
-        const confirmationCode = randomUUID();
-        const expirationDate = add(new Date(), { minutes: 60 });
-
-        await this.UserModel.updateOne(
-          { _id: userId },
-          {
-            $set: {
-              emailConfirmation: {
-                confirmationCode,
-                expirationDate,
-                isConfirmed: false,
-              },
-            },
-          },
-        );
-
-        const updatedUser = await this.UserModel.findOne({ _id: userId });
-
-        return updatedUser.toObject() || null;
-      }
-    }
-    return null;
+    return this.usersRepository.findAndUpdateUserForEmailSend(userId);
   }
 
   async updateRefreshTokenByDeviceId(
     deviceId: string,
     newLastActiveDate: string,
   ): Promise<boolean> {
-    const refTokenByDeviceId = await this.DeviceModel.updateOne(
-      { deviceId: deviceId },
-      { $set: { lastActiveDate: newLastActiveDate } },
-    );
-    return refTokenByDeviceId.matchedCount === 1;
+    const refTokenByDeviceId =
+      await this.deviceRepository.updateRefreshTokenByDeviceId(
+        deviceId,
+        newLastActiveDate,
+      );
+    return refTokenByDeviceId;
   }
 
   async addNewDevice(
     device: DeviceMongoDbType,
   ): Promise<DeviceMongoDbType | null> {
-    const newDevice = new this.DeviceModel(device);
-
-    try {
-      await newDevice.save();
-      return newDevice.toObject();
-    } catch (error) {
-      console.error('Error saving new device:', error);
-      return null;
-    }
+    const newDevice = this.deviceRepository.addDevice(device);
+    return newDevice;
   }
 
   async resetPasswordWithRecoveryCode(
     _id: ObjectId,
     newPassword: string,
   ): Promise<any> {
-    // TODO: any don't like. need to change this Promise
-    const newPasswordSalt = await bcrypt.genSalt(10);
-    const newHashedPassword = await this._generateHash(
-      newPassword,
-      newPasswordSalt,
-    );
-
-    await this.UserModel.updateOne(
-      { _id: _id },
-      {
-        $set: {
-          passwordHash: newHashedPassword,
-          passwordSalt: newPasswordSalt,
-          recoveryCode: null,
-        },
-      },
-    );
-    return { success: true };
+    return this.usersRepository.resetPasswordWithRecoveryCode(_id, newPassword);
   }
 }
