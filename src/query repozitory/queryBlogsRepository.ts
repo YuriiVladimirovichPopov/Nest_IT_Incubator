@@ -1,12 +1,10 @@
 import { ObjectId, WithId } from 'mongodb';
-//import { BlogsMongoDbType } from '../types';
 import { BlogViewModel } from '../models/blogs/blogsViewModel';
-import { PaginatedType } from 'src/pagination';
-import { Paginated } from 'src/pagination';
 import { Blog, BlogDocument } from '../domain/schemas/blogs.schema';
 import { Model, isValidObjectId } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { PaginatedType, Paginated } from '../pagination';
 
 @Injectable()
 export class QueryBlogsRepository {

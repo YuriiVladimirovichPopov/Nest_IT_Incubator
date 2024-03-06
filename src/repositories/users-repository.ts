@@ -1,8 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { UsersMongoDbType } from '../types';
-import { UserPagination } from 'src/pagination';
+import { Paginated, UserPagination } from '../pagination';
 import { UserViewModel } from '../models/users/userViewModel';
-import { Paginated } from 'src/pagination';
 import { UserCreateViewModel } from '../models/users/createUser';
 import { User, UserDocument } from '../domain/schemas/users.schema';
 import { PostsViewModel } from '../models/posts/postsViewModel';

@@ -10,16 +10,16 @@ import {
 import { Response, Request } from 'express';
 import { ObjectId } from 'bson';
 import { error } from 'console';
-import { emailAdapter } from '../adapters/email-adapter';
+import { EmailAdapter } from '../adapters/email-adapter';
 import { AuthService } from '../application/auth-service';
 import { jwtService } from '../application/jwt-service';
-import { emailManager } from '../managers/email-manager';
+import { EmailManager } from '../managers/email-manager';
 import { CodeType } from '../models/code';
 import { UserCreateDto } from '../models/users/userInputModel';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { DeviceRepository } from '../repositories/device-repository';
 import { UsersRepository } from '../repositories/users-repository';
-import { httpStatuses } from 'src/send-status';
+import { httpStatuses } from '../send-status';
 import { DeviceMongoDbType, UsersMongoDbType, RequestWithBody } from '../types';
 
 @Controller('auth')
@@ -29,6 +29,8 @@ export class AuthController {
     private authService: AuthService,
     private queryUserRepository: QueryUserRepository,
     private deviceRepository: DeviceRepository,
+    private emailAdapter: EmailAdapter,
+    private emailManager: EmailManager,
   ) {}
 
   @Post()
@@ -72,13 +74,13 @@ export class AuthController {
     const user: UsersMongoDbType | null =
       await this.usersRepository.findUserByEmail(email);
     if (!user) {
-      return res.sendStatus(httpStatuses.NO_CONTENT_204);
+      return user;
     }
 
     const updatedUser = await this.usersRepository.sendRecoveryMessage(user);
 
     try {
-      emailAdapter.sendEmailWithRecoveryCode(
+      this.emailAdapter.sendEmailWithRecoveryCode(
         user.email,
         updatedUser.recoveryCode!,
       );
@@ -196,7 +198,7 @@ export class AuthController {
       await this.authService.findAndUpdateUserForEmailSend(userId);
 
     try {
-      await emailManager.sendEmail(
+      await this.emailManager.sendEmail(
         updatedUser!.email,
         updatedUser!.emailConfirmation.confirmationCode,
       );

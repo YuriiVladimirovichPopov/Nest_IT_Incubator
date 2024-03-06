@@ -1,6 +1,4 @@
 import { ObjectId } from 'mongodb';
-import { PaginatedType } from 'src/pagination';
-import { Paginated } from 'src/pagination';
 import { CommentViewModel } from '../models/comments/commentViewModel';
 import { Comment, CommentDocument } from '../domain/schemas/comments.schema';
 import {
@@ -11,6 +9,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { PaginatedType, Paginated } from '../pagination';
 
 @Injectable()
 export class CommentsQueryRepository {

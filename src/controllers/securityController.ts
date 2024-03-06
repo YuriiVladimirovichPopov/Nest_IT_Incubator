@@ -3,7 +3,7 @@ import { Response, Request } from 'express';
 import { AuthService } from '../application/auth-service';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { DeviceRepository } from '../repositories/device-repository';
-import { httpStatuses } from 'src/send-status';
+import { httpStatuses } from '../send-status';
 import {
   Controller,
   Delete,

@@ -37,6 +37,10 @@ import { AuthService } from './application/auth-service';
 import { TestService } from './application/test-servise';
 import { TestRepository } from './repositories/testing-repository';
 import dotenv from 'dotenv';
+import { EmailAdapter } from './adapters/email-adapter';
+import { EmailManager } from './managers/email-manager';
+import { ConfigModule } from '@nestjs/config';
+
 dotenv.config();
 
 const schemas = [
@@ -50,6 +54,7 @@ const schemas = [
 ];
 @Module({
   imports: [
+    ConfigModule.forRoot({isGlobal: true}),
     MongooseModule.forRoot(process.env.mongoUrl || ''),
     MongooseModule.forFeature(schemas),
   ], //тут меняем для монгус 13 видео
@@ -86,6 +91,9 @@ const schemas = [
     CommentsQueryRepository,
     QueryPostRepository,
     QueryUserRepository,
+    //other
+    EmailAdapter,
+    EmailManager,
   ],
 })
 export class AppModule {}

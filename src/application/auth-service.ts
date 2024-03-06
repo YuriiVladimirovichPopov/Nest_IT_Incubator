@@ -7,12 +7,11 @@ import { UsersRepository } from '../repositories/users-repository';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { Request } from 'express';
 import { Injectable } from '@nestjs/common';
-import { emailManager } from 'src/managers/email-manager';
 import Jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { emailAdapter } from 'src/adapters/email-adapter';
 import { settings } from '../appSettings';
-import { DeviceRepository } from 'src/repositories/device-repository';
+import { DeviceRepository } from '../repositories/device-repository';
+import { EmailManager } from '../managers/email-manager';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +19,7 @@ export class AuthService {
     private readonly usersRepository: UsersRepository,
     private readonly queryUserRepository: QueryUserRepository,
     private readonly deviceRepository: DeviceRepository,
+    private readonly emailManager: EmailManager,
   ) {}
 
   async createUser(
@@ -49,7 +49,7 @@ export class AuthService {
     const createResult = await this.usersRepository.createUser(newUser);
 
     try {
-      await emailManager.sendEmail(
+      await this.emailManager.sendEmail(
         newUser.email,
         newUser.emailConfirmation!.confirmationCode,
       );

@@ -1,8 +1,8 @@
-import { settings } from 'src/appSettings';
+import { settings } from '../appSettings';
 //import { UsersMongoDbType } from '../types';
 import { Injectable } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
-import { User } from 'src/domain/schemas/users.schema';
+import { User } from '../domain/schemas/users.schema';
 
 export type Payload = {
   userId: string;

@@ -16,9 +16,9 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { PaginatedType } from 'src/pagination';
-import { User } from 'src/domain/schemas/users.schema';
-import { ReactionUpdateDto } from 'src/models/reaction/reactionDto';
+import { PaginatedType } from '../pagination';
+import { User } from '../domain/schemas/users.schema';
+import { ReactionUpdateDto } from '../models/reaction/reactionDto';
 
 @Controller('comments')
 export class CommentController {

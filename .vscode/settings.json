@@ -1,5 +1,6 @@
 {
     "eslint.debug": true,
-    "eslint.enable": false,
-    "eslint.execArgv": null
+    "eslint.enable": true,
+    "eslint.execArgv": null,
+    "eslint.format.enable": true
 }

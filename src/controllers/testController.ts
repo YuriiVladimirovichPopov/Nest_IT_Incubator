@@ -1,5 +1,5 @@
 import { Controller, Delete, HttpCode } from '@nestjs/common';
-import { TestService } from 'src/application/test-servise';
+import { TestService } from '../application/test-servise';
 
 @Controller('testing')
 export class TestController {

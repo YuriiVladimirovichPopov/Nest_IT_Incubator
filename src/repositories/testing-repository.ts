@@ -2,14 +2,14 @@ import { User, UserDocument } from './../domain/schemas/users.schema';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
-import { Blog, BlogDocument } from 'src/domain/schemas/blogs.schema';
-import { Comment, CommentDocument } from 'src/domain/schemas/comments.schema';
-import { Device, DeviceDocument } from 'src/domain/schemas/device.schema';
-import { Post, PostDocument } from 'src/domain/schemas/posts.schema';
+import { Blog, BlogDocument } from '../domain/schemas/blogs.schema';
+import { Comment, CommentDocument } from '../domain/schemas/comments.schema';
+import { Device, DeviceDocument } from '../domain/schemas/device.schema';
+import { Post, PostDocument } from '../domain/schemas/posts.schema';
 import {
   Reaction,
   ReactionDocument,
-} from 'src/domain/schemas/reactionInfo.schema';
+} from '../domain/schemas/reactionInfo.schema';
 
 @Injectable()
 export class TestRepository {

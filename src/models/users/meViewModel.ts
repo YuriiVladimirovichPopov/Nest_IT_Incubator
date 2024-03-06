@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsObject, IsString, Length } from 'class-validator';
-import { IsOptionalEmail } from 'src/helpers/OptionalEmail';
-import { Trim } from 'src/helpers/Trim';
+import { IsOptionalEmail } from '../../helpers/OptionalEmail';
+import { Trim } from '../../helpers/Trim';
+
 
 export class MeViewType {
   @IsString({ message: 'Must be string' })

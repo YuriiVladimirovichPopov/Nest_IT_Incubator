@@ -6,8 +6,8 @@ import {
   Matches,
   IsDate,
 } from 'class-validator';
-import { IsOptionalEmail } from 'src/helpers/OptionalEmail';
-import { Trim } from 'src/helpers/Trim';
+import { IsOptionalEmail } from '../../helpers/OptionalEmail';
+import { Trim } from '../../helpers/Trim';
 
 export class UserViewModel {
   @IsObject()

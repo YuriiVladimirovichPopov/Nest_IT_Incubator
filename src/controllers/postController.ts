@@ -1,12 +1,11 @@
 import { PostsService } from '../application/post-service';
 import { CommentViewModel } from '../models/comments/commentViewModel';
-import { PostCreateDto } from 'src/models/posts/postsInputModel';
+import { PostCreateDto } from '../models/posts/postsInputModel';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
 import { CommentsQueryRepository } from '../query repozitory/queryCommentsRepository';
 import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 import { ParsedQs } from 'qs';
-import { PostsRepository } from '../repositories/posts-repository';
 import {
   BadRequestException,
   Body,
@@ -20,17 +19,17 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { ReactionStatusEnum } from '../domain/schemas/reactionInfo.schema';
+import { User } from '../domain/schemas/users.schema';
+import { QueryUserRepository } from '../query repozitory/queryUserRepository';
+import { CommentsRepository } from '../repositories/comments-repository';
+import { CreateCommentDto } from '../models/comments/createCommentDto';
+import { ReactionUpdateDto } from '../models/reaction/reactionDto';
 import {
   Paginated,
   PaginatedType,
   getPaginationFromQuery,
-} from 'src/pagination';
-import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
-import { User } from 'src/domain/schemas/users.schema';
-import { QueryUserRepository } from 'src/query repozitory/queryUserRepository';
-import { CommentsRepository } from 'src/repositories/comments-repository';
-import { CreateCommentDto } from 'src/models/comments/createCommentDto';
-import { ReactionUpdateDto } from 'src/models/reaction/reactionDto';
+} from '../pagination';
 
 @Controller('posts')
 export class PostController {

@@ -1,9 +1,8 @@
-import { PostCreateDto } from 'src/models/posts/postsInputModel';
+import { PostCreateDto } from '../models/posts/postsInputModel';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { PostsRepository } from '../repositories/posts-repository';
 import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
-import { Paginated } from 'src/pagination';
-import { PaginatedType } from 'src/pagination';
+import { Paginated, PaginatedType } from '../pagination';
 import { ReactionsRepository } from '../repositories/reaction-repository';
 import { User, UserDocument } from '../domain/schemas/users.schema';
 import {
@@ -18,8 +17,8 @@ import { PostsMongoDb } from '../types';
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserViewModel } from 'src/models/users/userViewModel';
-import { QueryBlogsRepository } from 'src/query repozitory/queryBlogsRepository';
+import { UserViewModel } from '../models/users/userViewModel';
+import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
 
 @Injectable()
 export class PostsService {

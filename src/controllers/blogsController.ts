@@ -17,13 +17,14 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+
+import { PostCreateForBlogDto } from '../models/posts/postCreateDTO';
+import { PostsService } from '../application/post-service';
 import {
   Paginated,
   PaginatedType,
   getPaginationFromQuery,
-} from 'src/pagination';
-import { PostCreateForBlogDTO } from 'src/models/posts/postCreateDTO';
-import { PostsService } from '../application/post-service';
+} from '../pagination';
 
 @Controller('blogs')
 export class BlogsController {
@@ -78,7 +79,7 @@ export class BlogsController {
   @HttpCode(201)
   async createPostForBlogById(
     @Param('id') blogId: string,
-    @Body() createPostForBlog: PostCreateForBlogDTO,
+    @Body() createPostForBlog: PostCreateForBlogDto,
   ) {
     const newPostForBlogById: PostsViewModel | null =
       await this.postsService.createdPostForSpecificBlog({

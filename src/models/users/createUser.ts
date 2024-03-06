@@ -6,8 +6,8 @@ import {
   Length,
   Matches,
 } from 'class-validator';
-import { IsOptionalEmail } from 'src/helpers/OptionalEmail';
-import { Trim } from 'src/helpers/Trim';
+import { IsOptionalEmail } from '../../helpers/OptionalEmail';
+import { Trim } from '../../helpers/Trim';
 
 export class UserCreateViewModel {
   @IsObject()
@@ -16,7 +16,7 @@ export class UserCreateViewModel {
   @Trim()
   @IsString({ message: 'Must be string' })
   @IsNotEmpty()
-  @Length(3, 10, { message: 'Length must be from 3 to 10 symbols' })
+  @Length(3, 20, { message: 'Length must be from 3 to 10 symbols' })   //TODO change(cheak swagger)
   login: string;
 
   @IsString({ message: 'Must be string' })

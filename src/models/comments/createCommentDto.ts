@@ -1,5 +1,5 @@
 import { IsObject, IsString, IsNotEmpty, Length } from 'class-validator';
-import { Trim } from 'src/helpers/Trim';
+import { Trim } from '../../helpers/Trim';
 
 export class CreateCommentDto {
   @IsObject()

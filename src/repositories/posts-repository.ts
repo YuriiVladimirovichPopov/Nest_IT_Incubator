@@ -1,6 +1,6 @@
 import { PostsMongoDb } from '../types';
 import { ObjectId } from 'mongodb';
-import { PostCreateDto } from 'src/models/posts/postsInputModel';
+import { PostCreateDto } from '../models/posts/postsInputModel';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { Post, PostDocument } from '../domain/schemas/posts.schema';
 import { ExtendedReactionInfoViewModelForPost } from '../models/reaction/reactionInfoViewModel';

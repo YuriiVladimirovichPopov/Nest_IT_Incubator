@@ -1,5 +1,5 @@
 import { CommentsMongoDbType, PostsMongoDb } from '../types';
-import { PaginatedType } from 'src/pagination';
+import { Paginated, PaginatedType } from '../pagination';
 import { ObjectId, WithId } from 'mongodb';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { Comment, CommentDocument } from '../domain/schemas/comments.schema';
@@ -15,7 +15,6 @@ import {
   ReactionStatusEnum,
 } from '../domain/schemas/reactionInfo.schema';
 import { Injectable } from '@nestjs/common';
-import { Paginated } from 'src/pagination';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 

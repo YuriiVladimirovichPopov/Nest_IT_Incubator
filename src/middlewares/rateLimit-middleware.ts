@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { RateLimitMongoDbType } from '../types';
-import { httpStatuses } from 'src/send-status';
+import { httpStatuses } from '../send-status';
 import { RateLimitModel } from '../domain/schemas/rateLimit.schema';
 
 const maxRequests = 5;

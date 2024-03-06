@@ -12,10 +12,11 @@ import {
   Post,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthService } from 'src/application/auth-service';
-import { Paginated, getUsersPagination } from 'src/pagination';
-import { UserCreateDto } from 'src/models/users/userInputModel';
+import { AuthService } from '../application/auth-service';
+
+import { UserCreateDto } from '../models/users/userInputModel';
 import { Query } from '@nestjs/common';
+import { Paginated, getUsersPagination } from '../pagination';
 
 @Controller('users')
 export class UserController {

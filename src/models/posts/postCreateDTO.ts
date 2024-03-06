@@ -2,7 +2,7 @@ import { ExtendedReactionInfoViewModelForPost } from '../reaction/reactionInfoVi
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class PostCreateForBlogDTO {
+export class PostCreateForBlogDto {
   id: string;
   title: string;
   shortDescription: string;

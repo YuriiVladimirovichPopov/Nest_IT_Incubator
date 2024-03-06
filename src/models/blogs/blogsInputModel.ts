@@ -1,5 +1,5 @@
 import { IsString, Length, IsNotEmpty, Matches, IsUrl } from 'class-validator';
-import { Trim } from 'src/helpers/Trim';
+import { Trim } from '../../helpers/Trim';
 
 export class BlogCreateDto {
   @Trim()

@@ -5,8 +5,8 @@ import {
   IsString,
   Length,
 } from 'class-validator';
-import { ReactionStatusEnum } from 'src/domain/schemas/reactionInfo.schema';
-import { Trim } from 'src/helpers/Trim';
+import { ReactionStatusEnum } from '../../domain/schemas/reactionInfo.schema';
+import { Trim } from '../../helpers/Trim';
 
 export class ReactionUpdateDto {
   @IsObject()

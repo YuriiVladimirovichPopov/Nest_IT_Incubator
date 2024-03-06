@@ -3,8 +3,8 @@ import { BlogCreateDto } from '../models/blogs/blogsInputModel';
 import { BlogsMongoDbType } from '../types';
 import { BlogViewModel } from '../models/blogs/blogsViewModel';
 import { BlogsRepository } from '../repositories/blogs-repository';
-import { Paginated } from 'src/pagination';
-import { PaginatedType } from 'src/pagination';
+import { Paginated } from '../pagination';
+import { PaginatedType } from '../pagination';
 import { QueryBlogsRepository } from '../query repozitory/queryBlogsRepository';
 import { Injectable } from '@nestjs/common';
 

@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { BlogCreateDto } from 'src/models/blogs/blogsInputModel';
+import { BlogCreateDto } from '../models/blogs/blogsInputModel';
 import { BlogsMongoDbType } from '../types';
 import { BlogViewModel } from '../models/blogs/blogsViewModel';
 import { Blog, BlogDocument } from '../domain/schemas/blogs.schema';

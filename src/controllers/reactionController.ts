@@ -1,6 +1,6 @@
 import { Response, Request } from 'express';
 import { ReactionsService } from '../application/reaction-service';
-import { httpStatuses } from 'src/send-status';
+import { httpStatuses } from '../send-status';
 import { ReactionsRepository } from '../repositories/reaction-repository';
 import { Controller } from '@nestjs/common';
 
