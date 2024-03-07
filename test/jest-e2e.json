@@ -1,9 +1,17 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": ".",
+  "collectCoverage": true,
+  "coverageDirectory": "coverage", 
+  "coverageProvider": "v8",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
+  "testTimeout": 100000, 
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   }
 }
+
+
+
+  

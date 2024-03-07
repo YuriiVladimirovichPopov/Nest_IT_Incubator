@@ -2,7 +2,7 @@ import { add } from 'date-fns';
 import { randomUUID } from 'crypto';
 import { ObjectId } from 'mongodb';
 import { DeviceMongoDbType, UsersMongoDbType } from '../types';
-import { UserCreateViewModel } from '../models/users/createUser';
+import { UserCreateDto } from '../models/users/createUser';
 import { UsersRepository } from '../repositories/users-repository';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { Request } from 'express';
@@ -26,7 +26,7 @@ export class AuthService {
     login: string,
     email: string,
     password: string,
-  ): Promise<UserCreateViewModel | null> {
+  ): Promise<UserCreateDto | null> {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await this._generateHash(password, passwordSalt);
 
@@ -45,7 +45,7 @@ export class AuthService {
         isConfirmed: false,
       },
     };
-    console.log('create user', newUser);
+    
     const createResult = await this.usersRepository.createUser(newUser);
 
     try {

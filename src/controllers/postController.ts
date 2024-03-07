@@ -30,6 +30,7 @@ import {
   PaginatedType,
   getPaginationFromQuery,
 } from '../pagination';
+import { httpStatuses } from '../send-status';
 
 @Controller('posts')
 export class PostController {
@@ -43,7 +44,7 @@ export class PostController {
   ) {}
 
   @Get('/:id/comments')
-  @HttpCode(200)
+  @HttpCode(httpStatuses.OK_200)
   async getCommentsByPostId(
     @Query() query: ParsedQs,
     @Param('id') postId: string,
@@ -69,7 +70,7 @@ export class PostController {
   }
 
   @Post('/:postId/comments')
-  @HttpCode(201)
+  @HttpCode(httpStatuses.CREATED_201)
   async createCommentsByPostId(
     @Param('postId') postId: string,
     @Body() createCommentDto: CreateCommentDto,

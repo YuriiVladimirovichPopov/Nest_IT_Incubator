@@ -119,7 +119,7 @@ export class AuthController {
 
   @Get()
   @HttpCode(200)
-  async me(req: Request, res: Response) {
+  async me(req: Request) {
     const userId = req.userId;
     if (!userId) throw new UnauthorizedException();
     else {
@@ -130,10 +130,7 @@ export class AuthController {
 
   @Post()
   @HttpCode(204)
-  async registrationConfirmation(
-    req: RequestWithBody<CodeType>,
-    res: Response,
-  ) {
+  async registrationConfirmation(req: RequestWithBody<CodeType>) {
     const currentDate = new Date();
 
     const user = await this.usersRepository.findUserByConfirmationCode(
@@ -238,7 +235,7 @@ export class AuthController {
 
   @Post()
   @HttpCode(204)
-  async logOut(req: Request, res: Response) {
+  async logOut(req: Request) {
     const deviceId = req.deviceId!;
     const userId = req.userId!;
 

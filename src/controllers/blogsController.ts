@@ -2,7 +2,6 @@ import { ParsedQs } from 'qs';
 import { BlogService } from '../application/blog-service';
 import { BlogCreateDto } from '../models/blogs/blogsInputModel';
 import { BlogViewModel } from '../models/blogs/blogsViewModel';
-import { PostsViewModel } from '../models/posts/postsViewModel';
 import { QueryPostRepository } from '../query repozitory/queryPostsRepository';
 import { UserViewModel } from '../models/users/userViewModel';
 import {
@@ -18,7 +17,7 @@ import {
   Query,
 } from '@nestjs/common';
 
-import { PostCreateForBlogDto } from '../models/posts/postCreateDTO';
+import { PostsViewModel } from '../models/posts/postsViewModel';
 import { PostsService } from '../application/post-service';
 import {
   Paginated,
@@ -79,7 +78,7 @@ export class BlogsController {
   @HttpCode(201)
   async createPostForBlogById(
     @Param('id') blogId: string,
-    @Body() createPostForBlog: PostCreateForBlogDto,
+    @Body() createPostForBlog: PostsViewModel,
   ) {
     const newPostForBlogById: PostsViewModel | null =
       await this.postsService.createdPostForSpecificBlog({

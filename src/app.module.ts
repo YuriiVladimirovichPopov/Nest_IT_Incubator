@@ -40,6 +40,7 @@ import dotenv from 'dotenv';
 import { EmailAdapter } from './adapters/email-adapter';
 import { EmailManager } from './managers/email-manager';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 dotenv.config();
 
@@ -54,7 +55,14 @@ const schemas = [
 ];
 @Module({
   imports: [
-    ConfigModule.forRoot({isGlobal: true}),
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000, //меняем по сваггеру! тут милисекунды
+        limit: 3, // количество попыток
+      },
+    ]),
+    ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.mongoUrl || ''),
     MongooseModule.forFeature(schemas),
   ], //тут меняем для монгус 13 видео

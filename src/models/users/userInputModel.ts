@@ -23,5 +23,5 @@ export class UserCreateDto {
   @IsString({ message: 'Must be string' })
   @IsNotEmpty()
   @IsEmail()
-  email: string; // TODO: надо ли навешивать кастомную валидацию?
+  email: string;
 }
