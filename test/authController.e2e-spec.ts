@@ -68,30 +68,30 @@ describe('e2e tests for AuthController', () => {
     return request(httpServer);
   };
 
-  it(`'/registration':
-        should create new user and send confirmation email with code`, async () => {
+  it(`'auth/registration':
+        should create new user`, async () => {
     const mockUserik = {
       login: mockUser.login,
       email: mockUser.email,
       password: mockUser.password,
     };
-    //console.log('httpSever', httpServer);
 
-    const res = await request(httpServer).post(`/auth/login`).send(mockUserik);
-    console.log('res', res);
-    //.expect(httpStatuses.NO_CONTENT_204);
-  });
+    await request(httpServer)
+      .post(`/auth/registration`)
+      .send(mockUserik)
+      .expect(httpStatuses.NO_CONTENT_204);
+  }); //TODO: как делать getState() и setState()???
 
-  it.skip(`"auth/registration":
+  it(`'auth/registration':
         should return error if email or login already exist`, async () => {
-    //const users = await getRequest().get(RouterPaths.users);
+    const users = await getRequest().get(RouterPaths.users);
 
     await getRequest()
       .post(`/auth/registration`)
       .send({
-        login: 'leva',
-        email: 'papanchik87@yahoo.com',
-        password: '987654321',
+        login: users.body.login, //не уверен что правильно
+        email: users.body.email, //не уверен что правильно
+        password: mockUser.password,
       })
       .expect(httpStatuses.BAD_REQUEST_400);
   });
@@ -143,7 +143,7 @@ describe('e2e tests for AuthController', () => {
       .expect(httpStatuses.BAD_REQUEST_400);
   });
 
-  it.skip(`"auth/login":
+  it(`"auth/login":
         should sign in user;
         content: JWT 'access' token, JWT 'refresh' token in cookie (http only, secure);
         status 200;`, async () => {

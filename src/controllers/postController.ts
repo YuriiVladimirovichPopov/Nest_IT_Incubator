@@ -80,12 +80,14 @@ export class PostController {
         postId,
         createCommentDto.userId,
       );
-    if (!postWithId) throw new NotFoundException({ message: 'post not found' });
+    if (!postWithId)
+      throw new NotFoundException([{ message: 'post not found' }]);
 
     const userLogin = await this.queryUserRepository.findLoginById(
       createCommentDto.userId,
     );
-    if (!userLogin) throw new NotFoundException({ message: 'user not found' });
+    if (!userLogin)
+      throw new NotFoundException([{ message: 'user not found' }]);
 
     const comment: CommentViewModel | null =
       await this.commentsRepository.createComment(
@@ -127,14 +129,18 @@ export class PostController {
     );
 
     if (!findBlogById) {
-      throw new BadRequestException('Blog not found'); // TODO:тут по идее массив ошибок должен быть
+      throw new BadRequestException([
+        { message: 'Blog not found', field: 'blog' },
+      ]); // TODO:тут по идее массив ошибок должен быть
     }
 
     const newPost: PostsViewModel | null =
       await this.postsService.createdPostForSpecificBlog(data);
 
     if (!newPost) {
-      throw new BadRequestException('Failed to create post'); // TODO:тут по идее массив ошибок должен быть
+      throw new BadRequestException([
+        { message: 'Failed to create post', field: 'post' },
+      ]); // TODO:тут по идее массив ошибок должен быть
     }
 
     return newPost;
@@ -147,7 +153,8 @@ export class PostController {
       id,
       user?._id?.toString(),
     );
-    if (!foundPost) throw new NotFoundException({ message: 'post not found' }); // TODO:тут по идее массив ошибок должен быть
+    if (!foundPost)
+      throw new NotFoundException([{ message: 'post not found' }]); // TODO:тут по идее массив ошибок должен быть
     return foundPost;
   }
 
@@ -156,7 +163,8 @@ export class PostController {
   async updatePostById(@Param('id') id: string, @Body() post: PostCreateDto) {
     const updatePost = await this.postsService.updatePost(id, post);
 
-    if (!updatePost) throw new NotFoundException({ message: 'post not found' }); // TODO:тут по идее массив ошибок должен быть
+    if (!updatePost)
+      throw new NotFoundException([{ message: 'post not found' }]); // TODO:тут по идее массив ошибок должен быть
     return updatePost;
   }
 

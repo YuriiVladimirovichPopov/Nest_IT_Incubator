@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { UserCreateDto } from '../../src/models/users/createUser';
+import { UserCreateDto } from '../../src/models/users/userInputModel';
 
 export const createUserFunctionCreater = (app: any) => {
   const createUser = async (data: UserCreateDto) => {

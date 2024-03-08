@@ -2,7 +2,6 @@ import { add } from 'date-fns';
 import { randomUUID } from 'crypto';
 import { ObjectId } from 'mongodb';
 import { DeviceMongoDbType, UsersMongoDbType } from '../types';
-import { UserCreateDto } from '../models/users/createUser';
 import { UsersRepository } from '../repositories/users-repository';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { Request } from 'express';
@@ -12,6 +11,7 @@ import bcrypt from 'bcrypt';
 import { settings } from '../appSettings';
 import { DeviceRepository } from '../repositories/device-repository';
 import { EmailManager } from '../managers/email-manager';
+import { UserViewModel } from '../models/users/userViewModel';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +26,7 @@ export class AuthService {
     login: string,
     email: string,
     password: string,
-  ): Promise<UserCreateDto | null> {
+  ): Promise<UserViewModel | null> {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await this._generateHash(password, passwordSalt);
 
@@ -45,7 +45,7 @@ export class AuthService {
         isConfirmed: false,
       },
     };
-    
+
     const createResult = await this.usersRepository.createUser(newUser);
 
     try {
@@ -61,7 +61,7 @@ export class AuthService {
     const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
 
     if (!user) return false;
-
+    //console.log('user created', user);
     const passwordHash = await this._generateHash(password, user.passwordSalt);
     if (user.passwordHash !== passwordHash) {
       return false;

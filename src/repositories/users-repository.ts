@@ -2,7 +2,6 @@ import { ObjectId } from 'mongodb';
 import { UsersMongoDbType } from '../types';
 import { Paginated, UserPagination } from '../pagination';
 import { UserViewModel } from '../models/users/userViewModel';
-import { UserCreateDto } from '../models/users/createUser';
 import { User, UserDocument } from '../domain/schemas/users.schema';
 import { PostsViewModel } from '../models/posts/postsViewModel';
 import { Injectable } from '@nestjs/common';
@@ -90,7 +89,7 @@ export class UsersRepository {
     return user;
   }
 
-  async createUser(newUser: UsersMongoDbType): Promise<UserCreateDto> {
+  async createUser(newUser: UsersMongoDbType): Promise<UserViewModel> {
     await this.UserModel.insertMany(newUser);
     return {
       id: newUser._id.toString(),

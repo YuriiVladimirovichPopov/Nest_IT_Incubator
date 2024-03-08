@@ -6,13 +6,13 @@ import {
   Length,
 } from 'class-validator';
 import { ReactionStatusEnum } from '../../domain/schemas/reactionInfo.schema';
-import { Trim } from '../../helpers/Trim';
+import { IsOptionalTrim } from '../../validators/OptionalTrim';
 
 export class ReactionUpdateDto {
   @IsObject()
   userId: string;
 
-  @Trim()
+  @IsOptionalTrim()
   @IsString({ message: 'Must be string' })
   @Length(3, 10, { message: 'Length must be from 3 to 10 symbols' })
   @IsNotEmpty()

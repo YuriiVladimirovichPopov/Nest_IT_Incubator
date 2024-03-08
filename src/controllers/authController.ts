@@ -1,26 +1,33 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   HttpCode,
   InternalServerErrorException,
+  Ip,
   Post,
+  Req,
+  Res,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Response, Request } from 'express';
-import { ObjectId } from 'bson';
+//import { ObjectId } from 'bson';
 import { error } from 'console';
 import { EmailAdapter } from '../adapters/email-adapter';
 import { AuthService } from '../application/auth-service';
 import { jwtService } from '../application/jwt-service';
 import { EmailManager } from '../managers/email-manager';
 import { CodeType } from '../models/code';
-import { UserCreateDto } from '../models/users/userInputModel';
+//import { UserCreateDto } from '../models/users/userInputModel';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { DeviceRepository } from '../repositories/device-repository';
 import { UsersRepository } from '../repositories/users-repository';
 import { httpStatuses } from '../send-status';
 import { DeviceMongoDbType, UsersMongoDbType, RequestWithBody } from '../types';
+import { UserCreateDto } from '../models/users/userInputModel';
+import { LoginInputType } from '../models/users/loginInputModel';
+import { ObjectId } from 'mongodb';
 
 @Controller('auth')
 export class AuthController {
@@ -32,14 +39,21 @@ export class AuthController {
     private emailAdapter: EmailAdapter,
     private emailManager: EmailManager,
   ) {}
-
+  //переделать
   @Post()
   @HttpCode(200)
-  async login(req: Request, res: Response) {
+  async login(
+    @Body() inputUser: LoginInputType,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Ip() ip: string,
+  ) {
     const user = await this.authService.checkCredentials(
-      req.body.loginOrEmail,
-      req.body.password,
+      inputUser.loginOrEmail,
+      inputUser.password,
     );
+
+    //console.log('user created', user);
     if (user) {
       const deviceId = new ObjectId().toString();
       const userId = user._id.toString();
@@ -51,21 +65,21 @@ export class AuthController {
       const lastActiveDate = await jwtService.getLastActiveDate(refreshToken);
       const newDevice: DeviceMongoDbType = {
         _id: new ObjectId(),
-        ip: req.ip || '',
+        ip: ip || '',
         title: req.headers['user-agent'] || 'title',
         lastActiveDate,
         deviceId,
         userId,
       };
       await this.authService.addNewDevice(newDevice);
-      res
+      return res
         .cookie('refreshToken', refreshToken, { httpOnly: true, secure: true })
         .send({ accessToken: accessToken });
-      return;
     } else {
       throw new UnauthorizedException();
     }
   }
+  //переделать
   //TODO: навесить гуарды с 429 ошибкой
   @Post()
   @HttpCode(204)
@@ -91,6 +105,7 @@ export class AuthController {
       });
     }
   }
+  //переделать
   //TODO: навесить гуарды с 429 ошибкой
   @Post()
   @HttpCode(204)
@@ -116,7 +131,7 @@ export class AuthController {
       return res.send('code is valid and new password is accepted');
     }
   }
-
+  //переделать
   @Get()
   @HttpCode(200)
   async me(req: Request) {
@@ -127,7 +142,7 @@ export class AuthController {
       return userViewModel;
     }
   }
-
+  //переделать
   @Post()
   @HttpCode(204)
   async registrationConfirmation(req: RequestWithBody<CodeType>) {
@@ -166,31 +181,38 @@ export class AuthController {
     return result;
   }
 
-  @Post()
-  async registration(req: RequestWithBody<UserCreateDto>, res: Response) {
+  //TODO: работает!!!
+  @Post('/registration')
+  @HttpCode(httpStatuses.NO_CONTENT_204)
+  async registration(
+    @Body() inputModel: UserCreateDto,
+    //@Res({ passthrough: true }) res: Response,
+  ) {
     const user = await this.authService.createUser(
-      req.body.login,
-      req.body.email,
-      req.body.password,
+      inputModel.login,
+      inputModel.password,
+      inputModel.email,
     );
+    console.log('user created', user);
 
     if (!user) throw new BadRequestException();
 
-    return res.sendStatus(httpStatuses.NO_CONTENT_204);
+    return user;
   }
-
+  //TODO: вроде сделал, но не до конца... 429 нужно добавить... не работает!!!
   @Post()
   async registrationEmailResending(
-    req: RequestWithBody<UsersMongoDbType>,
-    res: Response,
+    @Body() inputUser: UsersMongoDbType,
+    // req: RequestWithBody<UsersMongoDbType>,
+    // res: Response,
   ) {
-    const user = await this.usersRepository.findUserByEmail(req.body.email);
+    const user = await this.usersRepository.findUserByEmail(inputUser.email);
     if (!user) throw new BadRequestException();
 
     if (user.emailConfirmation.isConfirmed)
-      throw new BadRequestException({ message: 'isConfirmed' });
+      throw new BadRequestException([{ message: `user's email is confirmed` }]);
 
-    const userId = req.body._id;
+    const userId = inputUser._id; //req.body._id;
     const updatedUser =
       await this.authService.findAndUpdateUserForEmailSend(userId);
 
@@ -202,9 +224,9 @@ export class AuthController {
     } catch {
       error('email is already confirmed', error);
     }
-    return res.sendStatus(httpStatuses.NO_CONTENT_204);
+    return updatedUser;
   }
-
+  //переделать
   @Post()
   @HttpCode(200)
   async refreshToken(req: Request, res: Response) {
@@ -232,7 +254,7 @@ export class AuthController {
       });
     }
   }
-
+  //переделать
   @Post()
   @HttpCode(204)
   async logOut(req: Request) {

@@ -6,14 +6,14 @@ import {
   Matches,
   IsDate,
 } from 'class-validator';
-import { IsOptionalEmail } from '../../helpers/OptionalEmail';
-import { Trim } from '../../helpers/Trim';
+import { IsOptionalEmail } from '../../validators/OptionalEmail';
+import { IsOptionalTrim } from '../../validators/OptionalTrim';
 
 export class UserViewModel {
   @IsObject()
   id: string;
 
-  @Trim()
+  @IsOptionalTrim()
   @IsString({ message: 'Must be string' })
   @Length(3, 10, { message: 'Length must be from 3 to 10 symbols' })
   @IsNotEmpty()

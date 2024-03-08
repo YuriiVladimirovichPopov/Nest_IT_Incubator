@@ -57,9 +57,9 @@ const schemas = [
   imports: [
     ThrottlerModule.forRoot([
       {
-        name: 'short',
-        ttl: 1000, //меняем по сваггеру! тут милисекунды
-        limit: 3, // количество попыток
+        name: 'rateLimit',
+        ttl: 10000,
+        limit: 5,
       },
     ]),
     ConfigModule.forRoot({ isGlobal: true }),

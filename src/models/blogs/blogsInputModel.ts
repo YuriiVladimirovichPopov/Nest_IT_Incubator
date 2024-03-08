@@ -1,8 +1,8 @@
 import { IsString, Length, IsNotEmpty, Matches, IsUrl } from 'class-validator';
-import { Trim } from '../../helpers/Trim';
+import { IsOptionalTrim } from '../../validators/OptionalTrim';
 
 export class BlogCreateDto {
-  @Trim()
+  @IsOptionalTrim()
   @IsString({ message: 'Must be string' })
   @IsNotEmpty()
   @Length(1, 15, { message: 'Length must be from 1 to 15 simbols' })
@@ -11,7 +11,7 @@ export class BlogCreateDto {
   })
   name: string;
 
-  @Trim()
+  @IsOptionalTrim()
   @IsString({ message: 'Must be string' })
   @IsNotEmpty()
   @Length(1, 500, { message: 'Length must be from 1 to 500 simbols' })

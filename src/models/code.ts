@@ -1,8 +1,8 @@
 import { IsString, IsUUID } from 'class-validator';
-import { Trim } from '../helpers/Trim';
+import { IsOptionalTrim } from '../validators/OptionalTrim';
 
 export class CodeType {
-  @Trim()
+  @IsOptionalTrim()
   @IsString()
   @IsUUID()
   code: string;

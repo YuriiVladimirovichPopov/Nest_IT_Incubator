@@ -1,15 +1,6 @@
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsObject,
-  IsString,
-  Length,
-} from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class UserCreateDto {
-  @IsObject()
-  id: string;
-
   @IsString({ message: 'Must be string' })
   @Length(3, 10, { message: 'Length must be from 3 to 10 symbols' })
   @IsNotEmpty()

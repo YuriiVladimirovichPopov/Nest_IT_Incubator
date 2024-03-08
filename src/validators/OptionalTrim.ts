@@ -1,4 +1,4 @@
 import { Transform, TransformFnParams } from 'class-transformer';
 
-export const Trim = () =>
+export const IsOptionalTrim = () =>
   Transform(({ value }: TransformFnParams) => value?.trim());
