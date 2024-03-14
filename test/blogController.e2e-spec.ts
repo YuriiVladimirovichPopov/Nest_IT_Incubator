@@ -8,8 +8,9 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import { appSettings } from '../src/appSettings';
-import { Blog } from '../src/domain/schemas/blogs.schema';
+import { BlogDocument } from '../src/domain/schemas/blogs.schema';
 import { createBlogFunction } from './helpers/createBlogHelper';
+import { Model } from 'mongoose';
 dotenv.config();
 
 describe('tests for blogs', () => {
@@ -19,6 +20,7 @@ describe('tests for blogs', () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let createdBlog1: BlogViewModel;
   let createBlog;
+  let BlogModel;
 
   beforeAll(async (): Promise<void> => {
     try {
@@ -30,6 +32,7 @@ describe('tests for blogs', () => {
       await app.init();
       httpServer = app.getHttpServer();
       createBlog = createBlogFunction(httpServer);
+      BlogModel = moduleFixture.get(Model<BlogDocument>);
     } catch (error) {
       console.error('Error during module initialization:', error);
     }
@@ -84,7 +87,7 @@ describe('tests for blogs', () => {
   });
 
   it('should create a new blog with correct input data', async () => {
-    const countOfBlogsBefore = await Blog.countDocuments();
+    const countOfBlogsBefore = await BlogModel.countDocuments();
     expect(countOfBlogsBefore).toBe(0);
     const inputModel: BlogCreateDto = {
       name: 'new blog',
@@ -106,7 +109,7 @@ describe('tests for blogs', () => {
       createdAt: expect.any(String),
     });
 
-    const countOfBlogsAfter = await Blog.countDocuments();
+    const countOfBlogsAfter = await BlogModel.countDocuments();
     expect(countOfBlogsAfter).toBe(1);
 
     const getByIdRes = await getRequest().get(

@@ -7,12 +7,12 @@ export class UserCreateDto {
   login: string;
 
   @IsString({ message: 'Must be string' })
-  @Length(6, 20, { message: 'incorrect password' })
-  @IsNotEmpty()
-  password: string;
-
-  @IsString({ message: 'Must be string' })
   @IsNotEmpty()
   @IsEmail()
   email: string;
+
+  @IsString({ message: 'Must be string' })
+  @Length(6, 20, { message: 'incorrect password' })
+  @IsNotEmpty()
+  password: string;
 }

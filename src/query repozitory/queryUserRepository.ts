@@ -1,5 +1,4 @@
 import { randomUUID } from 'crypto';
-import { UsersMongoDbType } from '../types';
 import { User, UserDocument } from '../domain/schemas/users.schema';
 import mongoose, { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
@@ -11,7 +10,7 @@ export class QueryUserRepository {
     @InjectModel(User.name)
     private readonly UserModel: Model<UserDocument>,
   ) {}
-  _userMapper(user: UsersMongoDbType) {
+  _userMapper(user: User) {
     return {
       id: user._id.toString(),
       login: user.login,
@@ -22,7 +21,7 @@ export class QueryUserRepository {
     };
   }
 
-  async findUserById(id: string): Promise<UsersMongoDbType | null> {
+  async findUserById(id: string): Promise<User | null> {
     const userById = await this.UserModel.findOne(
       { _id: new mongoose.Types.ObjectId(id) },
       {

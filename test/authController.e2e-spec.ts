@@ -96,7 +96,7 @@ describe('e2e tests for AuthController', () => {
       .expect(httpStatuses.BAD_REQUEST_400);
   });
 
-  it.skip(`"auth/registration-email-resending":
+  it(`"auth/registration-email-resending":
         should send email with new code if user exists but not confirmed yet;
         status 204;`, async () => {
     emailAdapter.sendEmail = jest.fn();
@@ -111,7 +111,7 @@ describe('e2e tests for AuthController', () => {
     );
   });
 
-  it.skip(`"auth/registration-confirmation":
+  it(`"auth/registration-confirmation":
         should confirm registration by email;
         status 204`, async () => {
     await getRequest()
@@ -120,7 +120,7 @@ describe('e2e tests for AuthController', () => {
       .expect(httpStatuses.NO_CONTENT_204);
   });
 
-  it.skip(`"auth/registration-confirmation":
+  it(`"auth/registration-confirmation":
         should return error if code already confirmed; status 400`, async () => {
     await getRequest()
       .post(`/auth/registration-confirmation`)
@@ -128,7 +128,7 @@ describe('e2e tests for AuthController', () => {
       .expect(httpStatuses.BAD_REQUEST_400);
   });
 
-  it.skip(`"auth/registration-email-resending":
+  it(`"auth/registration-email-resending":
         should return error if email already confirmed; status 400;`, async () => {
     await getRequest()
       .post(`/auth/registration-email-resending`)
@@ -136,7 +136,7 @@ describe('e2e tests for AuthController', () => {
       .expect(httpStatuses.BAD_REQUEST_400);
   });
 
-  it.skip(`"auth/registration-confirmation":
+  it(`"auth/registration-confirmation":
         should return error if code doesnt exist; status 400;`, async () => {
     await getRequest()
       .post(`${RouterPaths.auth}/registration-confirmation`)
@@ -158,13 +158,13 @@ describe('e2e tests for AuthController', () => {
     accessToken = response.body.accessToken;
   });
 
-  it.skip(`"auth/me":
+  it(`"auth/me":
         should return the error when the 'access' token has expired or there is no one in the headers;
         status 401`, async () => {
     await getRequest().get(`/auth/me`).expect(httpStatuses.UNAUTHORIZED_401);
   });
 
-  it.skip(`"auth/refresh-token", "/auth/logout":
+  it(`"auth/refresh-token", "/auth/logout":
         should return an error when the "refresh" token has expired or there is no one in the cookie;
         status 401`, async () => {
     await getRequest()
@@ -172,7 +172,7 @@ describe('e2e tests for AuthController', () => {
       .expect(httpStatuses.UNAUTHORIZED_401);
   });
 
-  it.skip(`"auth/refresh-token":
+  it(`"auth/refresh-token":
         should return new 'refresh' and 'access' tokens; status 200;
         content: new JWT 'access' token, new JWT 'refresh' token in cookie (http only, secure)`, async () => {
     await getRequest()
@@ -188,7 +188,7 @@ describe('e2e tests for AuthController', () => {
       .expect(httpStatuses.UNAUTHORIZED_401);
   });
 
-  it.skip(`"auth/me": should check "access" token and return current user data;
+  it(`"auth/me": should check "access" token and return current user data;
     status 200; content: current user data`, async () => {
     const response = await getRequest()
       .get(`/auth/me`)
@@ -201,20 +201,20 @@ describe('e2e tests for AuthController', () => {
     });
   });
 
-  it.skip(`"auth/logout": should make the 'refresh' token invalid; status 204`, async () => {
+  it(`"auth/logout": should make the 'refresh' token invalid; status 204`, async () => {
     await getRequest()
       .post(`${RouterPaths.auth}/logout`)
       .expect(httpStatuses.NO_CONTENT_204);
   });
 
-  it.skip(` "auth/refresh-token", "/auth/logout": should return an error if the "refresh" token has become invalid;
+  it(` "auth/refresh-token", "/auth/logout": should return an error if the "refresh" token has become invalid;
     status 401`, async () => {
     await getRequest()
       .post(`${RouterPaths.auth}/logout`)
       .expect(httpStatuses.UNAUTHORIZED_401);
   });
 
-  it.skip('should return 429 status code', async () => {
+  it('should return 429 status code', async () => {
     for (const endpoint of endpoints) {
       for (let i = 0; i <= 5; i++) {
         const res = await getRequest().post(endpoint).send();

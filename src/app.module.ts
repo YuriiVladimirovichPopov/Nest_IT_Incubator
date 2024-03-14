@@ -41,6 +41,7 @@ import { EmailAdapter } from './adapters/email-adapter';
 import { EmailManager } from './managers/email-manager';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { JWTService } from './application/jwt-service';
 
 dotenv.config();
 
@@ -65,7 +66,7 @@ const schemas = [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.mongoUrl || ''),
     MongooseModule.forFeature(schemas),
-  ], //тут меняем для монгус 13 видео
+  ],
 
   controllers: [
     AuthController,
@@ -83,7 +84,7 @@ const schemas = [
     BlogService,
     CommentsService,
     TestService,
-    //JWTService,
+    JWTService,
     PostsService,
     ReactionsService,
     //repositories

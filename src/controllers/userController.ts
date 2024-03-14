@@ -1,6 +1,5 @@
 import { UserViewModel } from '../models/users/userViewModel';
 import { UsersRepository } from '../repositories/users-repository';
-
 import {
   Body,
   Controller,

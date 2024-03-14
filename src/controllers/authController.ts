@@ -16,18 +16,21 @@ import { Response, Request } from 'express';
 import { error } from 'console';
 import { EmailAdapter } from '../adapters/email-adapter';
 import { AuthService } from '../application/auth-service';
-import { jwtService } from '../application/jwt-service';
+import { JWTService, jwtService } from '../application/jwt-service';
 import { EmailManager } from '../managers/email-manager';
-import { CodeType } from '../models/code';
+import { CodeType } from '../models/auth/code';
 //import { UserCreateDto } from '../models/users/userInputModel';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { DeviceRepository } from '../repositories/device-repository';
 import { UsersRepository } from '../repositories/users-repository';
 import { httpStatuses } from '../send-status';
-import { DeviceMongoDbType, UsersMongoDbType, RequestWithBody } from '../types';
+import { DeviceMongoDbType } from '../types';
 import { UserCreateDto } from '../models/users/userInputModel';
 import { LoginInputType } from '../models/users/loginInputModel';
 import { ObjectId } from 'mongodb';
+import { PasswordRecoveryDto } from '../models/auth/password-recovery';
+import { NewPasswordDto } from '../models/auth/newPasswordDto';
+import { User } from '../domain/schemas/users.schema';
 
 @Controller('auth')
 export class AuthController {
@@ -38,14 +41,16 @@ export class AuthController {
     private deviceRepository: DeviceRepository,
     private emailAdapter: EmailAdapter,
     private emailManager: EmailManager,
+    private jwtService: JWTService,
   ) {}
-  //переделать
-  @Post()
+  //TODO: вроде сделал, добавь гуард
+  //@Throttle(false)
+  @Post('login')
   @HttpCode(200)
   async login(
-    @Body() inputUser: LoginInputType,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @Body() inputUser: LoginInputType,
+    @Res() res: Response, //{ passthrough: true }
     @Ip() ip: string,
   ) {
     const user = await this.authService.checkCredentials(
@@ -53,14 +58,19 @@ export class AuthController {
       inputUser.password,
     );
 
-    //console.log('user created', user);
+    console.log('user created', user);
     if (user) {
       const deviceId = new ObjectId().toString();
       const userId = user._id.toString();
-      const accessToken = await jwtService.createJWT(user);
-      const refreshToken = await jwtService.createRefreshToken(
+      const accessToken = await this.jwtService.createJWT(user);
+      const refreshToken = await this.jwtService.createRefreshToken(
         userId,
         deviceId,
+      );
+      console.log(
+        `'userId' ${userId},
+        'deviceId' ${deviceId}, 
+        'refreshToken' ${refreshToken}`,
       );
       const lastActiveDate = await jwtService.getLastActiveDate(refreshToken);
       const newDevice: DeviceMongoDbType = {
@@ -72,6 +82,7 @@ export class AuthController {
         userId,
       };
       await this.authService.addNewDevice(newDevice);
+      console.log(`Added device ${JSON.stringify(newDevice)}`);
       return res
         .cookie('refreshToken', refreshToken, { httpOnly: true, secure: true })
         .send({ accessToken: accessToken });
@@ -79,40 +90,54 @@ export class AuthController {
       throw new UnauthorizedException();
     }
   }
-  //переделать
+  //TODO: вроде сделал
   //TODO: навесить гуарды с 429 ошибкой
-  @Post()
+  @Post('password-recovery')
   @HttpCode(204)
-  async passwordRecovery(req: Request, res: Response) {
-    const email = req.body.email;
-    const user: UsersMongoDbType | null =
-      await this.usersRepository.findUserByEmail(email);
+  async passwordRecovery(
+    @Body() passwordRecoveryDto: PasswordRecoveryDto,
+    @Res() res: Response,
+  ) {
+    const email = passwordRecoveryDto.email;
+    console.log('email', email);
+
+    const user = await this.usersRepository.findUserByEmail(email);
     if (!user) {
       return user;
     }
+    console.log('user: ' + user);
 
     const updatedUser = await this.usersRepository.sendRecoveryMessage(user);
+    console.log('updated user:           ' + updatedUser);
 
     try {
+      console.log('ffgrghtyjhtyhrrtg');
+      
       this.emailAdapter.sendEmailWithRecoveryCode(
         user.email,
         updatedUser.recoveryCode!,
       );
+      console.log('updated user:' + updatedUser);
       return res.send({ message: 'Recovery code sent' });
     } catch (error) {
+      console.log('error:        ' + error);
+      
       throw new InternalServerErrorException({
         message: 'Сервер на кофе-брейке!',
       });
     }
   }
-  //переделать
+  //TODO: вроде сделал
   //TODO: навесить гуарды с 429 ошибкой
-  @Post()
+  @Post('new-password')
   @HttpCode(204)
-  async newPassword(req: Request, res: Response) {
-    const { newPassword, recoveryCode } = req.body;
-
-    const user = await this.usersRepository.findUserByRecoryCode(recoveryCode);
+  async newPassword(
+    @Body() newPasswordDto: NewPasswordDto,
+    @Res() res: Response,
+  ) {
+    const user = await this.usersRepository.findUserByRecoryCode(
+      newPasswordDto.recoveryCode,
+    );
 
     if (!user)
       throw new BadRequestException({
@@ -125,16 +150,16 @@ export class AuthController {
       });
     const result = await this.authService.resetPasswordWithRecoveryCode(
       user._id,
-      newPassword,
+      newPasswordDto.newPassword,
     );
     if (result.success) {
       return res.send('code is valid and new password is accepted');
     }
   }
-  //переделать
-  @Get()
+  //TODO: вроде сделал, НЕ ДО КОНЦА! БЕАРЕР АВТОРИЗАЦИЮ НАВЕШАТЬ
+  @Get('me')
   @HttpCode(200)
-  async me(req: Request) {
+  async me(@Req() req: Request) {
     const userId = req.userId;
     if (!userId) throw new UnauthorizedException();
     else {
@@ -142,14 +167,16 @@ export class AuthController {
       return userViewModel;
     }
   }
-  //переделать
-  @Post()
+  //TODO: вроде сделал не работает
+  @Post('registration-confirmation')
   @HttpCode(204)
-  async registrationConfirmation(req: RequestWithBody<CodeType>) {
+  async registrationConfirmation(
+    @Body() registrationConfirmationDto: CodeType,
+  ) {
     const currentDate = new Date();
 
     const user = await this.usersRepository.findUserByConfirmationCode(
-      req.body.code,
+      registrationConfirmationDto.code,
     );
 
     if (!user)
@@ -169,7 +196,10 @@ export class AuthController {
         errorsMessages: [{ message: 'The code is exparied', field: 'code' }],
       });
 
-    if (user.emailConfirmation!.confirmationCode !== req.body.code)
+    if (
+      user.emailConfirmation!.confirmationCode !==
+      registrationConfirmationDto.code
+    )
       throw new BadRequestException({
         errorsMessages: [{ message: 'Invalid code', field: 'code' }],
       });
@@ -184,35 +214,27 @@ export class AuthController {
   //TODO: работает!!!
   @Post('/registration')
   @HttpCode(httpStatuses.NO_CONTENT_204)
-  async registration(
-    @Body() inputModel: UserCreateDto,
-    //@Res({ passthrough: true }) res: Response,
-  ) {
+  async registration(@Body() inputModel: UserCreateDto) {
     const user = await this.authService.createUser(
       inputModel.login,
-      inputModel.password,
       inputModel.email,
+      inputModel.password,
     );
-    console.log('user created', user);
 
     if (!user) throw new BadRequestException();
 
     return user;
   }
   //TODO: вроде сделал, но не до конца... 429 нужно добавить... не работает!!!
-  @Post()
-  async registrationEmailResending(
-    @Body() inputUser: UsersMongoDbType,
-    // req: RequestWithBody<UsersMongoDbType>,
-    // res: Response,
-  ) {
+  @Post('registration-email-resending')
+  async registrationEmailResending(@Body() inputUser: User) {
     const user = await this.usersRepository.findUserByEmail(inputUser.email);
     if (!user) throw new BadRequestException();
 
     if (user.emailConfirmation.isConfirmed)
       throw new BadRequestException([{ message: `user's email is confirmed` }]);
 
-    const userId = inputUser._id; //req.body._id;
+    const userId = inputUser._id;
     const updatedUser =
       await this.authService.findAndUpdateUserForEmailSend(userId);
 
@@ -226,10 +248,13 @@ export class AuthController {
     }
     return updatedUser;
   }
-  //переделать
-  @Post()
+  //TODO: вроде сделал, но не нравится @Req()
+  @Post('refresh-token')
   @HttpCode(200)
-  async refreshToken(req: Request, res: Response) {
+  async refreshToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const deviceId = req.deviceId!;
     const userId = req.userId!;
 
@@ -254,13 +279,13 @@ export class AuthController {
       });
     }
   }
-  //переделать
-  @Post()
+  //TODO: вроде сделал, но не нравится @Req()
+  @Post('logout')
   @HttpCode(204)
-  async logOut(req: Request) {
+  async logOut(@Req() req: Request) {
     const deviceId = req.deviceId!;
     const userId = req.userId!;
-
+    console.log('logged out', deviceId, userId);
     try {
       const res = await this.deviceRepository.deleteDeviceById(
         userId,

@@ -48,8 +48,7 @@ export class BlogsRepository {
     }
     const _id = new ObjectId(id);
     const foundBlogById = await this.BlogModel.deleteOne({ _id });
-
-    return foundBlogById.deletedCount === 1;
+    return foundBlogById.deletedCount === 1; // TODO: здесь null лучше возвращать?
   }
 
   async deleteAllBlogs(): Promise<boolean> {

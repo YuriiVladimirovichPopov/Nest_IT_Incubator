@@ -1,7 +1,6 @@
 import { add } from 'date-fns';
 import { randomUUID } from 'crypto';
-import { ObjectId } from 'mongodb';
-import { DeviceMongoDbType, UsersMongoDbType } from '../types';
+import { DeviceMongoDbType } from '../types';
 import { UsersRepository } from '../repositories/users-repository';
 import { QueryUserRepository } from '../query repozitory/queryUserRepository';
 import { Request } from 'express';
@@ -12,6 +11,8 @@ import { settings } from '../appSettings';
 import { DeviceRepository } from '../repositories/device-repository';
 import { EmailManager } from '../managers/email-manager';
 import { UserViewModel } from '../models/users/userViewModel';
+import { User } from '../domain/schemas/users.schema';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class AuthService {
@@ -30,7 +31,7 @@ export class AuthService {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await this._generateHash(password, passwordSalt);
 
-    const newUser: UsersMongoDbType = {
+    const newUser: User = {
       _id: new ObjectId(),
       login,
       email,
@@ -59,13 +60,14 @@ export class AuthService {
 
   async checkCredentials(loginOrEmail: string, password: string) {
     const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
+    console.log('Checking credentials', user);
 
     if (!user) return false;
-    //console.log('user created', user);
+
     const passwordHash = await this._generateHash(password, user.passwordSalt);
-    if (user.passwordHash !== passwordHash) {
-      return false;
-    }
+
+    if (user.passwordHash !== passwordHash) return false;
+
     return user;
   }
 
@@ -132,9 +134,7 @@ export class AuthService {
     return bcrypt.hash(password, 10);
   }
 
-  async findAndUpdateUserForEmailSend(
-    userId: ObjectId,
-  ): Promise<UsersMongoDbType | null> {
+  async findAndUpdateUserForEmailSend(userId: ObjectId): Promise<User | null> {
     return this.usersRepository.findAndUpdateUserForEmailSend(userId);
   }
 

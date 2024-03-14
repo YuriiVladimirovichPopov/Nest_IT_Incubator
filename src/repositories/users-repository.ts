@@ -1,5 +1,4 @@
 import { ObjectId } from 'mongodb';
-import { UsersMongoDbType } from '../types';
 import { Paginated, UserPagination } from '../pagination';
 import { UserViewModel } from '../models/users/userViewModel';
 import { User, UserDocument } from '../domain/schemas/users.schema';
@@ -17,7 +16,7 @@ export class UsersRepository {
     @InjectModel(User.name)
     private readonly UserModel: Model<UserDocument>,
   ) {}
-  _userMapper(user: UsersMongoDbType) {
+  _userMapper(user: User) {
     return {
       id: user._id.toString(),
       login: user.login,
@@ -43,7 +42,7 @@ export class UsersRepository {
       filter = { login: { $regex: pagination.searchLoginTerm, $options: 'i' } };
     }
 
-    const result: UsersMongoDbType[] = await this.UserModel.find(filter, {
+    const result: User[] = await this.UserModel.find(filter, {
       projection: {
         passwordHash: 0,
         passwordSalt: 0,
@@ -77,9 +76,10 @@ export class UsersRepository {
     return user;
   }
 
-  async findUserByEmail(email: string): Promise<UsersMongoDbType | null> {
+  async findUserByEmail(email: string): Promise<User | null> {
+    //UsersMongoDbType
     const user = await this.UserModel.findOne({ email: email });
-    return user.toObject();
+    return user;
   }
 
   async findUserByConfirmationCode(emailConfirmationCode: string) {
@@ -89,7 +89,8 @@ export class UsersRepository {
     return user;
   }
 
-  async createUser(newUser: UsersMongoDbType): Promise<UserViewModel> {
+  async createUser(newUser: User): Promise<UserViewModel> {
+    // be UsersMongoDbType
     await this.UserModel.insertMany(newUser);
     return {
       id: newUser._id.toString(),
@@ -114,20 +115,23 @@ export class UsersRepository {
     }
   }
 
-  async findUserByRecoryCode(
-    recoveryCode: string,
-  ): Promise<UsersMongoDbType | null> {
+  async findUserByRecoryCode(recoveryCode: string): Promise<User | null> {
+    //be UsersMongoDbType
     const user = await this.UserModel.findOne({ recoveryCode });
-    return user.toObject();
+    return user;
   }
 
-  async sendRecoveryMessage(user: UsersMongoDbType): Promise<UsersMongoDbType> {
+  async sendRecoveryMessage(user: User): Promise<User | null> {
+    //be UsersMongoDbType
     const recoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const updatedUser: UsersMongoDbType | null =
+    console.log('USER' + user);
+    const updatedUser: User | null = //be UsersMongoDbType
       await this.UserModel.findByIdAndUpdate(
         { _id: user._id },
-        { $set: { recoveryCode } },
+        { $set: { recoveryCode } }
       );
+      console.log('Updated         ' + typeof user._id);
+      
     return updatedUser!;
   }
 
@@ -169,9 +173,8 @@ export class UsersRepository {
     return hash;
   }
 
-  async findAndUpdateUserForEmailSend(
-    userId: ObjectId,
-  ): Promise<UsersMongoDbType | null> {
+  async findAndUpdateUserForEmailSend(userId: ObjectId): Promise<User | null> {
+    //UsersMongoDbType
     const user = await this.UserModel.findOne({ _id: userId });
 
     if (user && !user.emailConfirmation.isConfirmed) {

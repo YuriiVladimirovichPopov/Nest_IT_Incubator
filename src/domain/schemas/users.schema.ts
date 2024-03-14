@@ -1,5 +1,6 @@
-import mongoose, { HydratedDocument } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ObjectId } from 'mongodb';
 
 export const loginValid = {
   minLength: 3,
@@ -32,12 +33,12 @@ export class EmailConfirmation {
 export const AccountDataSchema = // TODO: may be need to change NAME? because a little don't understand
   SchemaFactory.createForClass(EmailConfirmation);
 
-export type UserDocument = HydratedDocument<User>; //TODO: been UsersMongoDbType
+export type UserDocument = HydratedDocument<User>;
 
 @Schema()
 export class User {
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId })
-  _id: mongoose.Schema.Types.ObjectId;
+  @Prop({ required: true, type: ObjectId })
+  _id: ObjectId;
 
   @Prop({
     required: true,
@@ -66,7 +67,7 @@ export class User {
   emailConfirmation: EmailConfirmation;
 
   @Prop({ type: String })
-  recoveryCode: string;
+  recoveryCode?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

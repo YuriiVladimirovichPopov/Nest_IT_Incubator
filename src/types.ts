@@ -83,19 +83,19 @@ export class PostsMongoDb {
   }
 }
 
-@Injectable()
-export class UsersMongoDbType {
-  constructor(
-    public _id: ObjectId,
-    public login: string,
-    public email: string,
-    public createdAt: string,
-    public passwordHash: string,
-    public passwordSalt: string,
-    public emailConfirmation: EmailConfirmationType,
-    public recoveryCode?: string,
-  ) {}
-}
+// @Injectable()
+// export class UsersMongoDbType {
+//   constructor(
+//     public _id: ObjectId,
+//     public login: string,
+//     public email: string,
+//     public createdAt: string,
+//     public passwordHash: string,
+//     public passwordSalt: string,
+//     public emailConfirmation: EmailConfirmationType,
+//     public recoveryCode?: string,
+//   ) {}
+// }
 
 export type EmailConfirmationType = {
   isConfirmed: boolean;
